@@ -9,6 +9,8 @@
 
 <body>
   <h1>Some famous Computer Scientists</h1>
+  <span class="user">Welcome {{session.username}}</span>
+  <a href="{{ url_for('logout') }}" class="btn">Logout</a>
   <div>{{data}}</div>
 
   <div>

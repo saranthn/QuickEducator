@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Sign up</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Slide Navbar</title>
+	<link rel="stylesheet" type="text/css" href="slide navbar style.css">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+	<div class="main">  	
+		<input type="checkbox" id="chk" aria-hidden="true">
+			<div class="signup">
+				<form action="signUp" method="post">
+					<label for="chk" aria-hidden="true">Sign Up</label>
+					<input id="firstname" input type="text" name="firstname" placeholder="First name" required="">
+					<input id="lastname" input type="text" name="lastname" placeholder="Last name" required="">
+					<input id="username" input type="text" name="username" placeholder="User name" required="">
+					<input id="email" input type="email" name="email" placeholder="Email" required="">
+					<input id="gender" input type="text" name="gender" placeholder="Gender" required="">
+				  <input id="dob" input type="date" name="dob" placeholder="DOB" required="">
+				  <input id="university" input type="text" name="university" placeholder="University" required="">
+				  <input id="degree" input type="text" name="degree" placeholder="Degree" required="">
+				  <input id="course" input type="text" name="course" placeholder="Course" required="">
+				  <input id="country" input type="text" name="country" placeholder="Country" required="">
+				  <input id="phoneNo" input type="number" name="phoneNo" placeholder="Phone Number" required="">
+					<input id="password" input type="password" name="password" placeholder="Password" required="">
+					<button>Sign up</button>
+					<center><span class="login">Already a member <a href="{{ url_for('signIn') }}">Sign In</a></span></center>
+				</form>
+			</div>
+	</div>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
