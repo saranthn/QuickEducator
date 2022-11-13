@@ -31,8 +31,15 @@
   </div>
 
   <div>
-    {% if lectures %}
+    <h3>  Professors </h3> 
+      {% for n in professors %}
+        <h4>{{n['first_name']}} {{n['last_name']}}</h4>
+      {% endfor %}
+  </div>
+
+  <div>
     <h3>  Lectures </h3> 
+    {% if lectures %}
     <table>
       <tr>
         <th>S. No</th>
@@ -48,12 +55,15 @@
       {% endfor %}
     </table>
     {% else %}
+    <div>
+      No Lectures Available
+    </div>
     {% endif %}
   </div>
 
   <div>
-    {% if reviews %}
     <h3>  Reviews </h3> 
+    {% if reviews %}
     <table>
       <tr>
         <th>Date</th>
@@ -67,6 +77,9 @@
       {% endfor %}
     </table>
     {% else %}
+    <div>
+      No Reviews Available
+    </div>
     {% endif %}
   </div>
 

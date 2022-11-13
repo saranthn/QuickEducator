@@ -243,11 +243,11 @@ def signUp():
 
 @app.route('/home', methods=['POST','GET'])
 def home():
-  search_query = "select distinct first_name from professors"
+  search_query = "select * from professors"
   cursor = g.conn.execute(sqlalchemy.text(search_query))
   prof_names = []
   for result in cursor:
-    prof_names.append(result['first_name'])  # can also be accessed using result[0]
+    prof_names.append(result)  # can also be accessed using result[0]
   cursor.close()
     
   if request.method == 'GET':
@@ -263,7 +263,7 @@ def home():
     search_query = "select * from courses c,teaches t,professors p where c.course_name ilike '%{}%' and c.course_difficulty_level ilike '%{}%' and c.course_id = t.course_id and t.user_id = p.user_id ".format(name, difficulty)
 
     if prof:
-      search_query += "and p.first_name = '{}'".format(prof)
+      search_query += "and p.user_id = '{}'".format(prof)
     print(search_query)
     if sort:
       search_query += "order by {} {}".format(sort, order)
@@ -299,6 +299,13 @@ def courses():
   course_details = cursor.fetchone()
   print(course_details)
 
+  cursor = g.conn.execute('Select * from professors where user_id in (select user_id from teaches where course_id = (%s))', course_id)
+  professors = []
+  for result in cursor:
+    professors.append(result)
+  cursor.close()
+  print(professors)
+
   cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
   lectures = []
   for result in cursor:
@@ -309,13 +316,11 @@ def courses():
   cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
   reviews = []
   for result in cursor:
-    # a = str(result['date'])
-    # result['date'] = a
     reviews.append(result)
   cursor.close()
   print(reviews)
 
-  context = dict(course_details = course_details, lectures = lectures, reviews = reviews)
+  context = dict(course_details = course_details, professors = professors, lectures = lectures, reviews = reviews)
   return render_template("course.html", **context)
 
 if __name__ == "__main__":
