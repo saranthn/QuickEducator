@@ -186,7 +186,7 @@ def home():
 @app.route('/search_course', methods=['POST'])
 def search_course():
   name = request.form['q']
-  cursor = g.conn.execute("select * from courses where course_name like '%(%s)%'", name)
+  cursor = g.conn.execute('select * from courses where course_name like "%(%s)%"', name)
   names = ["da", "ada"]
   for result in cursor:
     names.append(result['name'])  # can also be accessed using result[0]
