@@ -196,8 +196,12 @@ def home():
     sort = request.form['sort']
     order = request.form['order']
     prof = request.form['prof']
-    search_query = "select * from courses where course_name ilike '%{}%' and course_difficulty_level ilike '%{}%'".format(name, difficulty)
 
+    search_query = "select * from courses c,teaches t,professors p where c.course_name ilike '%{}%' and c.course_difficulty_level ilike '%{}%' and c.course_id = t.course_id and t.user_id = p.user_id ".format(name, difficulty)
+
+    if prof:
+      search_query += "and p.first_name = '{}'".format(prof)
+    print(search_query)
     if sort:
       search_query += "order by {} {}".format(sort, order)
 
