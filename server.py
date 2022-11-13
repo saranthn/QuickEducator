@@ -221,7 +221,7 @@ def search_professor():
   cursor = g.conn.execute(sqlalchemy.text(search_query))
   names = []
   for result in cursor:
-    names.append(result['first_name'])  # can also be accessed using result[0]
+    names.append(result['first_name'])
   cursor.close()
   context = dict(professors = names)
   return render_template("home.html", **context)
@@ -229,11 +229,13 @@ def search_professor():
 
 @app.route('/courses')
 def courses():
-  course_name = request.args.get('course_name')
-  print(course_name)
-  #g.conn.execute('Select * from courses where course_name contains (%s)', name)
-  return redirect('/')
-
+  course_id = request.args.get('course_id')
+  print(course_id)
+  
+  cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
+  course_details = cursor.fetchone()
+  context = dict(course_details = course_details)
+  return render_template("course.html", **context)
 
 if __name__ == "__main__":
   import click

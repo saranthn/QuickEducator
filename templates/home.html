@@ -99,7 +99,7 @@
     </tr>
     {% for n in courses %}
       <tr>
-        <td>{{n['course_name']}}</td>
+        <td><a href="{{url_for('courses', course_id=n['course_id'])}}">{{n['course_name']}}</a></td>
         <td>{{n['first_name']}}</td>
         <td>{{n['course_fee']}}</td>
         <td>{{n['course_difficulty_level']}}</td>
