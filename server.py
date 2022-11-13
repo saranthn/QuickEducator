@@ -241,6 +241,83 @@ def signUp():
 
 
 
+@app.route('/home', methods=['POST','GET'])
+def home():
+  search_query = "select distinct first_name from professors"
+  cursor = g.conn.execute(sqlalchemy.text(search_query))
+  prof_names = []
+  for result in cursor:
+    prof_names.append(result['first_name'])  # can also be accessed using result[0]
+  cursor.close()
+    
+  if request.method == 'GET':
+    context = dict(professors = prof_names)
+    return render_template("home.html", **context)
+  else:
+    name = request.form['q']
+    difficulty = request.form['difficulty']
+    sort = request.form['sort']
+    order = request.form['order']
+    prof = request.form['prof']
+
+    search_query = "select * from courses c,teaches t,professors p where c.course_name ilike '%{}%' and c.course_difficulty_level ilike '%{}%' and c.course_id = t.course_id and t.user_id = p.user_id ".format(name, difficulty)
+
+    if prof:
+      search_query += "and p.first_name = '{}'".format(prof)
+    print(search_query)
+    if sort:
+      search_query += "order by {} {}".format(sort, order)
+
+    cursor = g.conn.execute(sqlalchemy.text(search_query))
+    course_names = []
+    for result in cursor:
+      course_names.append(result)  # can also be accessed using result[0]
+    cursor.close()
+    context = dict(courses = course_names, professors = prof_names)
+    return render_template("home.html", **context)
+
+
+@app.route('/search_professor', methods=['POST'])
+def search_professor():
+  name = request.form['prof']
+  search_query = "select * from professors where first_name ilike '%{}%'".format(name)
+  cursor = g.conn.execute(sqlalchemy.text(search_query))
+  names = []
+  for result in cursor:
+    names.append(result['first_name'])
+  cursor.close()
+  context = dict(professors = names)
+  return render_template("home.html", **context)
+
+
+@app.route('/courses')
+def courses():
+  course_id = request.args.get('course_id')
+  print(course_id)
+  
+  cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
+  course_details = cursor.fetchone()
+  print(course_details)
+
+  cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
+  lectures = []
+  for result in cursor:
+    lectures.append(result)
+  cursor.close()
+  print(lectures)
+
+  cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
+  reviews = []
+  for result in cursor:
+    # a = str(result['date'])
+    # result['date'] = a
+    reviews.append(result)
+  cursor.close()
+  print(reviews)
+
+  context = dict(course_details = course_details, lectures = lectures, reviews = reviews)
+  return render_template("course.html", **context)
+
 if __name__ == "__main__":
   import click
 

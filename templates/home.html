@@ -1,0 +1,116 @@
+<html>
+
+  <style>
+
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    #search {
+      width: 70%;
+      height: 50px;
+      border-radius: 25px;
+      padding-left: 20px;
+    }
+    .block {
+      width: 33%;
+      float:left;
+    }
+    .top {
+      margin-top: 20px;
+    }
+
+  </style>
+
+
+<body>
+  <center>
+    <h1>QuickEducator</h1>
+  </center>
+
+  <div>
+    <h2>  Courses </h2> 
+    <form method="POST" action="/home">
+      <div class="top">
+        <center>
+          <input id="search" type="text" name="q" placeholder="Search for Courses..">
+        </center>
+      </div>
+      <div class="top">
+        <center>
+          <div class="block">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty" name="difficulty">
+              <option selected value=""></option>
+              <option value="Beginner Level">Beginner Level</option>
+              <option value="Intermediate Level">Intermediate Level</option>
+              <option value="Advanced Level">Advanced Level</option>
+            </select>
+          </div>
+          <div class="block">
+            <label for="sort">Sort By:</label>
+            <select id="sort" name="sort">
+              <option selected value=""></option>
+              <option value="course_fee">Course Fee</option>
+              <option value="course_rating">Course Rating</option>
+            </select>
+            <label for="order"></label>
+            <select id="order" name="order">
+              <option selected value="ASC">ASC</option>
+              <option value="DESC">DESC</option>
+            </select>
+          </div>
+          <div class="block">
+            <label for="Professor">Professor:</label>
+            <select id="prof" name="prof">
+              <option selected value=""></option>
+              {% for p in professors %}
+                <option value="{{p}}">{{p}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </center>
+      </div>
+      <div class="top">
+        <center>
+          <input type="submit" value="Search">
+        </center>
+      </div>
+    </form>
+  </div>
+
+  {% if courses is defined %}
+  <table>
+    <tr>
+      <th>Course</th>
+      <th>Professor</th>
+      <th>Course fee</th>
+      <th>Course Difficulty</th>
+      <th>Course Rating</th>
+    </tr>
+    {% for n in courses %}
+      <tr>
+        <td><a href="{{url_for('courses', course_id=n['course_id'])}}">{{n['course_name']}}</a></td>
+        <td>{{n['first_name']}}</td>
+        <td>{{n['course_fee']}}</td>
+        <td>{{n['course_difficulty_level']}}</td>
+        <td>{{n['course_rating']}}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  {% endif %}
+
+</body>
+
+
+</html>

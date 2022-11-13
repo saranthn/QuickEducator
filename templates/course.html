@@ -1,0 +1,76 @@
+<html>
+
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+  </style>
+
+
+<body>
+  <center>
+    <h1>QuickEducator</h1>
+  </center>
+
+  <div>
+    <h2>  {{course_details['course_name']}} </h2> 
+    <h4>  Rating: {{course_details['course_rating']}} </h4> 
+    <h4>  Domain: {{course_details['course_domain']}} </h4> 
+    <h4>  Difficulty: {{course_details['course_difficulty_level']}} </h4> 
+    <h4>  Fee($): {{course_details['course_fee']}} </h4> 
+  </div>
+
+  <div>
+    {% if lectures %}
+    <h3>  Lectures </h3> 
+    <table>
+      <tr>
+        <th>S. No</th>
+        <th>Lecture</th>
+        <th>Description</th>
+      </tr>
+      {% for n in lectures %}
+        <tr>
+          <td>{{n['lecture_id']}}</td>
+          <td>{{n['topic']}}</td>
+          <td>{{n['description']}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    {% endif %}
+  </div>
+
+  <div>
+    {% if reviews %}
+    <h3>  Reviews </h3> 
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Feedback</th>
+      </tr>
+      {% for n in reviews %}
+        <tr>
+          <td>{{n['date_of_review']}}</td>
+          <td>{{n['feedback']}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    {% endif %}
+  </div>
+
+</body>
+
+
+</html>
