@@ -12,6 +12,7 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
+import sqlalchemy
 from flask import Flask, request, render_template, g, redirect, Response, url_for
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -187,7 +188,7 @@ def home():
 def search_course():
   name = request.form['q']
   search_query = "select * from courses where course_name like '%{}%'".format(name)
-  cursor = g.conn.execute(search_query)
+  cursor = g.conn.execute(sqlalchemy.text(search_query))
   names = ["da", "ada"]
   for result in cursor:
     names.append(result['name'])  # can also be accessed using result[0]
