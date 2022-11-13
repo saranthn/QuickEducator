@@ -1,0 +1,47 @@
+<html>
+
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+  <h1>QuickEducator</h1>
+
+  
+  <div>
+    <h2>  Courses </h2> 
+    <form method="POST" action="/search_course">
+      <input type="text" name="q" placeholder="Search for Courses..">
+      <input type="submit" value="Search">
+    </form>
+  </div>
+
+  <div>
+    <h2>  Professors </h2>
+    <form method="POST" action="/search_professor">
+      <input type="text" name="prof" placeholder="Search for Professors..">
+      <input type="submit" value="Search">
+    </form>
+  </div>
+
+  <div>
+    {% for n in courses %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div>
+
+  <div>
+    {% for n in professors %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div>
+
+
+</body>
+
+
+</html>

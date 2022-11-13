@@ -12,7 +12,7 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, url_for
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -41,11 +41,11 @@ engine = create_engine(DATABASEURI)
 # Example of running queries in your database
 # Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
 #
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);""")
-engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
+# engine.execute("""CREATE TABLE IF NOT EXISTS test (
+#   id serial,
+#   name text
+# );""")
+# engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 
 
 @app.before_request
@@ -175,6 +175,44 @@ def add():
 def login():
     abort(401)
     this_is_never_executed()
+
+
+@app.route('/home')
+def home():
+  #g.conn.execute('Select * from courses where course_name contains (%s)', name)
+  return render_template("home.html")
+
+
+@app.route('/search_course', methods=['POST'])
+def search_course():
+  name = request.form['q']
+  cursor = g.conn.execute("select * from courses where course_name like '%(%s)%'", name)
+  names = ["da", "ada"]
+  for result in cursor:
+    names.append(result['name'])  # can also be accessed using result[0]
+  cursor.close()
+  context = dict(courses = names)
+  return render_template("home.html", **context)
+
+
+@app.route('/search_professor', methods=['POST'])
+def search_professor():
+  name = request.form['prof']
+  cursor = g.conn.execute("select * from courses where course_name like '%(%s)%'", name)
+  names = ["gravano", "sahu"]
+  for result in cursor:
+    names.append(result['name'])  # can also be accessed using result[0]
+  cursor.close()
+  context = dict(professors = names)
+  return render_template("home.html", **context)
+
+
+@app.route('/courses')
+def courses():
+  course_name = request.args.get('course_name')
+  print(course_name)
+  #g.conn.execute('Select * from courses where course_name contains (%s)', name)
+  return redirect('/')
 
 
 if __name__ == "__main__":
