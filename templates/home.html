@@ -74,7 +74,7 @@
             <select id="prof" name="prof">
               <option selected value=""></option>
               {% for p in professors %}
-                <option value="{{p}}">{{p}}</option>
+                <option value="{{p['user_id']}}">{{p['first_name']}} {{p['last_name']}}</option>
               {% endfor %}
             </select>
           </div>
@@ -100,7 +100,7 @@
     {% for n in courses %}
       <tr>
         <td><a href="{{url_for('courses', course_id=n['course_id'])}}">{{n['course_name']}}</a></td>
-        <td>{{n['first_name']}}</td>
+        <td>{{n['first_name']}} {{n['last_name']}}</td>
         <td>{{n['course_fee']}}</td>
         <td>{{n['course_difficulty_level']}}</td>
         <td>{{n['course_rating']}}</td>
