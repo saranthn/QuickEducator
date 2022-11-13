@@ -21,17 +21,17 @@
   </div>
 
   <div>
+    {% for n in courses %}
+    <div>{{n}}</div>
+    {% endfor %}
+  </div>
+
+  <div>
     <h2>  Professors </h2>
     <form method="POST" action="/search_professor">
       <input type="text" name="prof" placeholder="Search for Professors..">
       <input type="submit" value="Search">
     </form>
-  </div>
-
-  <div>
-    {% for n in courses %}
-    <div>{{n}}</div>
-    {% endfor %}
   </div>
 
   <div>

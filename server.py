@@ -187,11 +187,11 @@ def home():
 @app.route('/search_course', methods=['POST'])
 def search_course():
   name = request.form['q']
-  search_query = "select * from courses where course_name like '%{}%'".format(name)
+  search_query = "select * from courses where course_name ilike '%{}%'".format(name)
   cursor = g.conn.execute(sqlalchemy.text(search_query))
-  names = ["da", "ada"]
+  names = [""]
   for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
+    names.append(result['course_name'])  # can also be accessed using result[0]
   cursor.close()
   context = dict(courses = names)
   return render_template("home.html", **context)
@@ -200,11 +200,11 @@ def search_course():
 @app.route('/search_professor', methods=['POST'])
 def search_professor():
   name = request.form['prof']
-  search_query = "select * from courses where course_name like '%{}%'".format(name)
+  search_query = "select * from professors where first_name ilike '%{}%'".format(name)
   cursor = g.conn.execute(sqlalchemy.text(search_query))
-  names = ["gravano", "sahu"]
+  names = []
   for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
+    names.append(result['first_name'])  # can also be accessed using result[0]
   cursor.close()
   context = dict(professors = names)
   return render_template("home.html", **context)
