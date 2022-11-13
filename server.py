@@ -180,17 +180,33 @@ def login():
 
 @app.route('/home', methods=['POST','GET'])
 def home():
+  search_query = "select distinct first_name from professors"
+  cursor = g.conn.execute(sqlalchemy.text(search_query))
+  prof_names = []
+  for result in cursor:
+    prof_names.append(result['first_name'])  # can also be accessed using result[0]
+  cursor.close()
+    
   if request.method == 'GET':
-    return render_template("home.html")
+    context = dict(professors = prof_names)
+    return render_template("home.html", **context)
   else:
     name = request.form['q']
-    search_query = "select * from courses where course_name ilike '%{}%'".format(name)
+    difficulty = request.form['difficulty']
+    sort = request.form['sort']
+    order = request.form['order']
+    prof = request.form['prof']
+    search_query = "select * from courses where course_name ilike '%{}%' and course_difficulty_level ilike '%{}%'".format(name, difficulty)
+
+    if sort:
+      search_query += "order by {} {}".format(sort, order)
+
     cursor = g.conn.execute(sqlalchemy.text(search_query))
-    names = []
+    course_names = []
     for result in cursor:
-      names.append(result)  # can also be accessed using result[0]
+      course_names.append(result)  # can also be accessed using result[0]
     cursor.close()
-    context = dict(courses = names)
+    context = dict(courses = course_names, professors = prof_names)
     return render_template("home.html", **context)
 
 

@@ -1,10 +1,7 @@
 <html>
 
   <style>
-    body{ 
-      font-size: 15pt;
-      font-family: arial;
-    }
+
     table {
       font-family: arial, sans-serif;
       border-collapse: collapse;
@@ -18,6 +15,20 @@
     tr:nth-child(even) {
       background-color: #dddddd;
     }
+    #search {
+      width: 70%;
+      height: 50px;
+      border-radius: 25px;
+      padding-left: 20px;
+    }
+    .block {
+      width: 33%;
+      float:left;
+    }
+    .top {
+      margin-top: 20px;
+    }
+
   </style>
 
 
@@ -29,8 +40,51 @@
   <div>
     <h2>  Courses </h2> 
     <form method="POST" action="/home">
-      <input type="text" name="q" placeholder="Search for Courses..">
-      <input type="submit" value="Search">
+      <div class="top">
+        <center>
+          <input id="search" type="text" name="q" placeholder="Search for Courses..">
+        </center>
+      </div>
+      <div class="top">
+        <center>
+          <div class="block">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty" name="difficulty">
+              <option selected value=""></option>
+              <option value="Beginner Level">Beginner Level</option>
+              <option value="Intermediate Level">Intermediate Level</option>
+              <option value="Advanced Level">Advanced Level</option>
+            </select>
+          </div>
+          <div class="block">
+            <label for="sort">Sort By:</label>
+            <select id="sort" name="sort">
+              <option selected value=""></option>
+              <option value="course_fee">Course Fee</option>
+              <option value="course_rating">Course Rating</option>
+            </select>
+            <label for="order"></label>
+            <select id="order" name="order">
+              <option selected value="ASC">ASC</option>
+              <option value="DESC">DESC</option>
+            </select>
+          </div>
+          <div class="block">
+            <label for="Professor">Professor:</label>
+            <select id="prof" name="prof">
+              <option selected value=""></option>
+              {% for p in professors %}
+                <option value="{{p}}">{{p}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </center>
+      </div>
+      <div class="top">
+        <center>
+          <input type="submit" value="Search">
+        </center>
+      </div>
     </form>
   </div>
 
@@ -46,7 +100,7 @@
     {% for n in courses %}
       <tr>
         <td>{{n['course_name']}}</td>
-        <td>{{n['course_name']}}</td>
+        <td>{{n['course_domain']}}</td>
         <td>{{n['course_fee']}}</td>
         <td>{{n['course_difficulty_level']}}</td>
         <td>{{n['course_rating']}}</td>
@@ -55,21 +109,6 @@
   </table>
   {% else %}
   {% endif %}
-
-  <!-- <div>
-    <h2>  Professors </h2>
-    <form method="POST" action="/search_professor">
-      <input type="text" name="prof" placeholder="Search for Professors..">
-      <input type="submit" value="Search">
-    </form>
-  </div>
-
-  <div>
-    {% for n in professors %}
-    <div>{{n}}</div>
-    {% endfor %}
-  </div> -->
-
 
 </body>
 
