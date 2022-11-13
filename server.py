@@ -186,7 +186,8 @@ def home():
 @app.route('/search_course', methods=['POST'])
 def search_course():
   name = request.form['q']
-  cursor = g.conn.execute('select * from courses where course_name like "%(%s)%"', name)
+  search_query = "select * from courses where course_name like '%{}%'".format(name)
+  cursor = g.conn.execute(search_query)
   names = ["da", "ada"]
   for result in cursor:
     names.append(result['name'])  # can also be accessed using result[0]
@@ -198,7 +199,8 @@ def search_course():
 @app.route('/search_professor', methods=['POST'])
 def search_professor():
   name = request.form['prof']
-  cursor = g.conn.execute("select * from courses where course_name like '%(%s)%'", name)
+  search_query = "select * from courses where course_name like '%{}%'".format(name)
+  cursor = g.conn.execute(sqlalchemy.text(search_query))
   names = ["gravano", "sahu"]
   for result in cursor:
     names.append(result['name'])  # can also be accessed using result[0]
