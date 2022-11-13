@@ -234,7 +234,25 @@ def courses():
   
   cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
   course_details = cursor.fetchone()
-  context = dict(course_details = course_details)
+  print(course_details)
+
+  cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
+  lectures = []
+  for result in cursor:
+    lectures.append(result)
+  cursor.close()
+  print(lectures)
+
+  cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
+  reviews = []
+  for result in cursor:
+    # a = str(result['date'])
+    # result['date'] = a
+    reviews.append(result)
+  cursor.close()
+  print(reviews)
+
+  context = dict(course_details = course_details, lectures = lectures, reviews = reviews)
   return render_template("course.html", **context)
 
 if __name__ == "__main__":
