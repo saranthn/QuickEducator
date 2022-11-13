@@ -12,11 +12,14 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
+from flask import Flask, request, render_template, g, redirect, Response, url_for, make_response, session
+from datetime import date
+import sqlalchemy
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
+app.secret_key = 'vk2503'
 
 #
 # The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
@@ -41,11 +44,11 @@ engine = create_engine(DATABASEURI)
 # Example of running queries in your database
 # Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
 #
-engine.execute("""CREATE TABLE IF NOT EXISTS test (
-  id serial,
-  name text
-);""")
-engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
+# engine.execute("""CREATE TABLE IF NOT EXISTS test (
+#   id serial,
+#   name text
+# );""")
+# engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
 
 
 @app.before_request
@@ -170,11 +173,72 @@ def add():
   g.conn.execute('INSERT INTO test(name) VALUES (%s)', name)
   return redirect('/')
 
+@app.route('/logout')
+def logout():
+  session.pop('loggedin', None)
+  session.pop('id', None)
+  session.pop('username', None)
+  return redirect(url_for('signIn'))
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+@app.route('/signIn', methods =['GET', 'POST'])
+def signIn():
+  if request.method == 'POST':
+    username = request.form['username']
+    password = request.form['password']
+    cursor = g.conn.execute('SELECT * FROM Students WHERE username = %s ', (username, ))
+    account = cursor.fetchone()
+    # print(account)
+    if account:
+      # resp = make_response(redirect("/"))
+      # resp.set_cookie('username', username)
+      session['loggedin'] = True
+      session['username'] = account['username']
+      # session['name'] = account['first_name']
+      print(session['username'])
+      print('Logged in successfully !')
+      return redirect("/")
+    else:
+      return render_template("signin_page.html")
+  return render_template("signin_page.html")
+
+@app.route('/signUp', methods =['GET', 'POST'])
+def signUp():
+  msg = 'Registered'
+  if request.method == 'POST':
+    userid = 100
+    d1 = date.today().strftime("%m/%d/%Y")
+    print("d1 =", d1)
+    firstname = request.form['firstname']
+    lastname = request.form['lastname']
+    username = request.form['username']
+    email = request.form['email']
+    gender = request.form['gender']
+    dob = request.form['dob']
+    phoneNo = request.form['phoneNo']
+    password = request.form['password']
+    university = request.form['university']
+    degree = request.form['degree']
+    course = request.form['course']
+    country = request.form['country']
+    cursor = g.conn.execute('SELECT * FROM Students WHERE username = %s', (username, ))
+    account_username = cursor.fetchone()
+    cursor.close()
+    cursor = g.conn.execute('SELECT * FROM Students WHERE email = %s', (email, ))
+    account_email = cursor.fetchone()
+    cursor.close()
+    if account_email or account_username:
+      msg = 'Account already exists !'
+      print(msg)
+    else:
+      # g.conn.execute('INSERT INTO Students VALUES('123', 'af12','ak','kk','M','kk@gmail.com','1234',d1,'columbia', 'MS', 'CS', 'USA', )')
+      insert_query ="INSERT INTO Students VALUES('{}','{}','{}','{}','{}','{}',{},'{}','{}','{}','{}','{}')".format(userid, username,firstname,lastname,gender,email,phoneNo,dob,university, degree, course, country)
+      print(insert_query)
+      g.conn.execute(sqlalchemy.text(insert_query))
+      print(msg)
+    return redirect("signIn")
+  else:
+    return render_template("signUp_page.html")
+
 
 
 if __name__ == "__main__":
