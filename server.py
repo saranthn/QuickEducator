@@ -178,23 +178,20 @@ def login():
     this_is_never_executed()
 
 
-@app.route('/home')
+@app.route('/home', methods=['POST','GET'])
 def home():
-  #g.conn.execute('Select * from courses where course_name contains (%s)', name)
-  return render_template("home.html")
-
-
-@app.route('/search_course', methods=['POST'])
-def search_course():
-  name = request.form['q']
-  search_query = "select * from courses where course_name ilike '%{}%'".format(name)
-  cursor = g.conn.execute(sqlalchemy.text(search_query))
-  names = [""]
-  for result in cursor:
-    names.append(result['course_name'])  # can also be accessed using result[0]
-  cursor.close()
-  context = dict(courses = names)
-  return render_template("home.html", **context)
+  if request.method == 'GET':
+    return render_template("home.html")
+  else:
+    name = request.form['q']
+    search_query = "select * from courses where course_name ilike '%{}%'".format(name)
+    cursor = g.conn.execute(sqlalchemy.text(search_query))
+    names = []
+    for result in cursor:
+      names.append(result)  # can also be accessed using result[0]
+    cursor.close()
+    context = dict(courses = names)
+    return render_template("home.html", **context)
 
 
 @app.route('/search_professor', methods=['POST'])

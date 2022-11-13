@@ -5,28 +5,58 @@
       font-size: 15pt;
       font-family: arial;
     }
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
   </style>
 
 
 <body>
-  <h1>QuickEducator</h1>
+  <center>
+    <h1>QuickEducator</h1>
+  </center>
 
-  
   <div>
     <h2>  Courses </h2> 
-    <form method="POST" action="/search_course">
+    <form method="POST" action="/home">
       <input type="text" name="q" placeholder="Search for Courses..">
       <input type="submit" value="Search">
     </form>
   </div>
 
-  <div>
+  {% if courses is defined %}
+  <table>
+    <tr>
+      <th>Course</th>
+      <th>Professor</th>
+      <th>Course fee</th>
+      <th>Course Difficulty</th>
+      <th>Course Rating</th>
+    </tr>
     {% for n in courses %}
-    <div>{{n}}</div>
+      <tr>
+        <td>{{n['course_name']}}</td>
+        <td>{{n['course_name']}}</td>
+        <td>{{n['course_fee']}}</td>
+        <td>{{n['course_difficulty_level']}}</td>
+        <td>{{n['course_rating']}}</td>
+      </tr>
     {% endfor %}
-  </div>
+  </table>
+  {% else %}
+  {% endif %}
 
-  <div>
+  <!-- <div>
     <h2>  Professors </h2>
     <form method="POST" action="/search_professor">
       <input type="text" name="prof" placeholder="Search for Professors..">
@@ -38,7 +68,7 @@
     {% for n in professors %}
     <div>{{n}}</div>
     {% endfor %}
-  </div>
+  </div> -->
 
 
 </body>
