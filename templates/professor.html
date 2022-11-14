@@ -1,0 +1,83 @@
+<html>
+
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+  </style>
+
+
+<body>
+  <center>
+    <h1>QuickEducator</h1>
+  </center>
+
+  <div>
+    <h2>  {{prof_details['first_name']}} {{prof_details['last_name']}} </h2> 
+    <h4>  Gender: {{prof_details['gender']}} </h4> 
+    <h4>  Email: {{prof_details['email']}} </h4> 
+    <h4>  Contact: {{prof_details['contact_no']}} </h4> 
+    <h4>  Date of Birth: {{prof_details['DOB']}} </h4> 
+    <h4>  Experience: {{prof_details['years_of_experience']}} years</h4> 
+    <h4>  Qualification: {{prof_details['qualification']}} </h4> 
+    <h4>  Research Area: {{prof_details['research_area']}} </h4>
+  </div>
+
+  <div>
+    <h3> Organization: {{org_details['org_name']}}, {{org_details['location']}} since: {{org_details['since']}}</h3> 
+  </div>
+
+  <div>
+    <h3>  Top Rated Courses </h3> 
+    <table>
+      <tr>
+        <th>Course</th>
+        <th>Domain</th>
+        <th>Rating</th>
+      </tr>
+      {% for n in courses %}
+        <tr>
+          <td>{{n['course_name']}}</td>
+          <td>{{n['course_domain']}}</td>
+          <td>{{n['course_rating']}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div>
+    <h3>  Reviews </h3> 
+    {% if reviews %}
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Feedback</th>
+      </tr>
+      {% for n in reviews %}
+        <tr>
+          <td>{{n['date_of_review']}}</td>
+          <td>{{n['feedback']}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div>
+      No Reviews Available
+    </div>
+    {% endif %}
+  </div>
+
+</body>
+
+
+</html>

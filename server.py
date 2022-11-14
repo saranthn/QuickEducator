@@ -277,17 +277,35 @@ def home():
     return render_template("home.html", **context)
 
 
-@app.route('/search_professor', methods=['POST'])
-def search_professor():
-  name = request.form['prof']
-  search_query = "select * from professors where first_name ilike '%{}%'".format(name)
-  cursor = g.conn.execute(sqlalchemy.text(search_query))
-  names = []
+@app.route('/professors')
+def professors():
+  prof_id = request.args.get('prof_id')
+  print(prof_id)
+  
+  cursor = g.conn.execute('Select * from professors where user_id = (%s)', prof_id)
+  prof_details = cursor.fetchone()
+  print(prof_details)
+
+  cursor = g.conn.execute('Select * from belongs_to b, organisation o where b.user_id = (%s) and b.org_id = o.org_id', prof_id)
+  org_details = cursor.fetchone()
+  print(org_details)
+
+  cursor = g.conn.execute('Select * from courses where course_id in (select course_id from teaches where user_id = (%s)) order by course_rating desc limit 10', prof_id)
+  courses = []
   for result in cursor:
-    names.append(result['first_name'])
+    courses.append(result)
   cursor.close()
-  context = dict(professors = names)
-  return render_template("home.html", **context)
+  print(courses)
+
+  cursor = g.conn.execute('Select * from gets g, review r where g.user_id = (%s) and r.review_id=g.review_id and r.review_type=g.review_type order by r.date_of_review desc', prof_id)
+  reviews = []
+  for result in cursor:
+    reviews.append(result)
+  cursor.close()
+  print(reviews)
+
+  context = dict(prof_details = prof_details, org_details = org_details, courses = courses, reviews = reviews)
+  return render_template("professor.html", **context)
 
 
 @app.route('/courses')
