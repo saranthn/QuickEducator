@@ -70,6 +70,7 @@
     }
     a {
      text-decoration: none;
+     color: inherit;
     }
     li {
      list-style: none;
@@ -81,7 +82,7 @@
 <body>
   <nav class="navbar">
      <!-- LOGO -->
-      <div class="logo">QuickEducator</div>
+      <div class="logo"><a href="{{ url_for('home') }}">QuickEducator</a></div>
       <ul class="nav-links">
         <!-- NAVIGATION MENUS -->
         <div class="menu">
