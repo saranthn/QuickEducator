@@ -341,7 +341,20 @@ def courses():
   cursor.close()
   #print(reviews)
 
-  context = dict(course_details = course_details, professors = professors, lectures = lectures, reviews = reviews)
+  user_name = session['username']
+  cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
+  userid = cursor.fetchone()['user_id']
+  print(userid)
+
+  cursor = g.conn.execute('Select * from registers where user_id = (%s) and course_id = (%s)', userid, course_id)
+  registered_course = cursor.fetchone()
+  if registered_course:
+    status = registered_course['status']
+  else:
+    status = "None"
+  print(status)
+
+  context = dict(course_details = course_details, professors = professors, lectures = lectures, reviews = reviews, status = status)
   return render_template("course.html", **context)
 
 
@@ -384,6 +397,53 @@ def add_review():
       return redirect(url_for('professors', prof_id=prof_id))
   
   
+@app.route('/enroll', methods=["POST"])
+def enroll():
+  course_id = request.args['course_id']
+  user_name = session['username']
+  cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
+  user_id = cursor.fetchone()['user_id']
+
+  cursor = g.conn.execute('Select * from registers where course_id = (%s) and user_id = (%s)', course_id, user_id)
+  results = []
+  for result in cursor:
+    results.append(result)
+  cursor.close()
+
+  today_date = datetime.today().strftime('%Y-%m-%d') 
+
+  if results:
+    query = "update registers set status='Enrolled',reg_date='{}' where user_id = '{}' and course_id = '{}'".format(today_date,user_id, course_id)
+  else:
+    query = "Insert into registers(user_id, course_id, status, reg_date) values('{}','{}','{}','{}')".format(user_id, course_id, 'Enrolled', today_date)   
+  print(query)
+  g.conn.execute(sqlalchemy.text(query))
+  return redirect(url_for('courses', course_id=course_id))
+
+
+
+@app.route('/add_wishlist', methods=["POST"])
+def add_wishlist():
+  course_id = request.args['course_id']
+  user_name = session['username']
+  cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
+  user_id = cursor.fetchone()['user_id']
+
+  cursor = g.conn.execute('Select * from registers where course_id = (%s) and user_id = (%s)', course_id, user_id)
+  results = []
+  for result in cursor:
+    results.append(result)
+  cursor.close()
+
+  today_date = datetime.today().strftime('%Y-%m-%d')   
+
+  if results:
+    query = "update registers set status='Wishlist',reg_date='{}' where user_id = '{}' and course_id = '{}'".format(today_date,user_id, course_id)
+  else:
+    query = "Insert into registers(user_id, course_id, status, reg_date) values('{}','{}','{}','{}')".format(user_id, course_id, 'Wishlist', today_date)   
+  print(query)
+  g.conn.execute(sqlalchemy.text(query))
+  return redirect(url_for('courses', course_id=course_id))
 
 
 @app.route('/registered_courses', methods=['GET'])
