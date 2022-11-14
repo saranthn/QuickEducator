@@ -14,13 +14,68 @@
     tr:nth-child(even) {
       background-color: #dddddd;
     }
+    /* NAVBAR STYLING STARTS */
+    .navbar {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     padding: 20px;
+     background-color: #573b8a;
+     color: #fff;
+    }
+    .nav-links a {
+     color: #fff;
+    }
+    /* LOGO */
+    .logo {
+     font-size: 32px;
+    }
+    /* NAVBAR MENU */
+    .menu {
+     display: flex;
+     gap: 1em;
+     font-size: 18px;
+    }
+    .menu li:hover {
+     background-color: #573b8c;
+     border-radius: 5px;
+     transition: 0.3s ease;
+    }
+    .menu li {
+     padding: 5px 14px;
+    }
+    /* UTILITIES */
+    *{
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+    }
+    body {
+     font-family: cursive;
+    }
+    a {
+     text-decoration: none;
+     color: inherit;
+    }
+    li {
+     list-style: none;
+    }
   </style>
 
 
 <body>
-  <center>
-    <h1>QuickEducator</h1>
-  </center>
+    <nav class="navbar">
+     <!-- LOGO -->
+      <div class="logo"><a href="{{ url_for('home') }}">QuickEducator</a></div>
+      <ul class="nav-links">
+        <!-- NAVIGATION MENUS -->
+        <div class="menu">
+          <li>Welcome {{session.username}}</a></li>
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+          <li><a href="{{ url_for('registered_courses') }}">Your Courses</a></li>
+        </div>
+      </ul>
+    </nav>
 
   <div>
     <h2>  {{course_details['course_name']}} </h2> 

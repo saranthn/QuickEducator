@@ -348,8 +348,21 @@ def courses():
 def registered_courses():
   # context = dict(username = session['username'])
   if request.method == 'GET':
-    
-    return render_template("registered_courses.html")
+    username = session['username']
+    print(username)
+    cursor = g.conn.execute('SELECT user_id FROM Students WHERE username = %s', (username, ))
+    account_userid = cursor.fetchone()
+    cursor.close()
+    print(account_userid[0])
+
+    cursor = g.conn.execute('SELECT r.course_id as id, c.course_name as name, r.status as status FROM Registers r, Courses c WHERE user_id = (%s) and r.course_id = c.course_id', (account_userid[0], ))
+    reg_courses = []
+    for result in cursor:
+      reg_courses.append(result)
+    cursor.close()
+    print(reg_courses)
+    context = dict(courses = reg_courses)
+    return render_template("registered_courses.html", **context)
 
 if __name__ == "__main__":
   import click
