@@ -112,11 +112,11 @@ def index():
   #
   # example of a database query
   #
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
-  for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
-  cursor.close()
+  # cursor = g.conn.execute("SELECT name FROM test")
+  # names = []
+  # for result in cursor:
+  #   names.append(result['name'])  # can also be accessed using result[0]
+  # cursor.close()
 
   #
   # Flask uses Jinja templates, which is an extension to HTML where you can
@@ -144,14 +144,14 @@ def index():
   #     <div>{{n}}</div>
   #     {% endfor %}
   #
-  context = dict(data = names)
+  # context = dict(data = names)
 
 
   #
   # render_template looks in the templates/ folder for files.
   # for example, the below file reads template/index.html
   #
-  return render_template("index.html", **context)
+  return redirect("/home")
 
 #
 # This is an example of a different path.  You can see it at:
@@ -249,10 +249,13 @@ def home():
   for result in cursor:
     prof_names.append(result)  # can also be accessed using result[0]
   cursor.close()
-    
+  print(session)
   if request.method == 'GET':
-    context = dict(professors = prof_names)
-    return render_template("home.html", **context)
+    if session:
+      context = dict(professors = prof_names)
+      return render_template("home.html", **context)
+    else:
+      return redirect("signIn")
   else:
     name = request.form['q']
     difficulty = request.form['difficulty']
@@ -340,6 +343,13 @@ def courses():
 
   context = dict(course_details = course_details, professors = professors, lectures = lectures, reviews = reviews)
   return render_template("course.html", **context)
+
+@app.route('/registered_courses', methods =['GET'])
+def registered_courses():
+  # context = dict(username = session['username'])
+  if request.method == 'GET':
+    
+    return render_template("registered_courses.html")
 
 if __name__ == "__main__":
   import click
