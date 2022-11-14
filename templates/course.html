@@ -83,6 +83,7 @@
     {% endif %}
   </div>
 
+  {% if status in 'Enrolled' %}
   <div>
     <h4>  Add Reviews </h3> 
     <form action="{{url_for('add_review', course_id=course_details['course_id'], review_type='Course')}}" id="usrform" method="POST">
@@ -90,6 +91,28 @@
       <input type="submit">
     </form>
   </div>
+  {% endif %}
+
+  {% if status in 'Enrolled' %}
+  <div>
+      <button disabled>Enrolled</button>
+  </div>
+  {% elif status in 'Wishlist' %}
+  <div>
+    <form action="{{url_for('enroll', course_id=course_details['course_id'])}}" method="POST">
+      <button>Enroll</button>
+    </form>
+  </div>
+  {% else %}
+  <div>
+    <form action="{{url_for('enroll', course_id=course_details['course_id'])}}" method="POST">
+      <button>Enroll</button>
+    </form>
+    <form action="{{url_for('add_wishlist', course_id=course_details['course_id'])}}" method="POST">
+      <button>Add To Wishlist</button>
+    </form>
+  </div>
+  {% endif %}
 
 </body>
 
