@@ -13,7 +13,7 @@ import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
 from flask import Flask, request, render_template, g, redirect, Response, url_for, make_response, session
-from datetime import date
+from datetime import date, datetime
 import sqlalchemy
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
@@ -314,41 +314,82 @@ def professors():
 @app.route('/courses')
 def courses():
   course_id = request.args.get('course_id')
-  print(course_id)
+  #print(course_id)
   
   cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
   course_details = cursor.fetchone()
-  print(course_details)
+  #print(course_details)
 
   cursor = g.conn.execute('Select * from professors where user_id in (select user_id from teaches where course_id = (%s))', course_id)
   professors = []
   for result in cursor:
     professors.append(result)
   cursor.close()
-  print(professors)
+  #print(professors)
 
   cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
   lectures = []
   for result in cursor:
     lectures.append(result)
   cursor.close()
-  print(lectures)
+  #print(lectures)
 
   cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
   reviews = []
   for result in cursor:
     reviews.append(result)
   cursor.close()
-  print(reviews)
+  #print(reviews)
 
   context = dict(course_details = course_details, professors = professors, lectures = lectures, reviews = reviews)
   return render_template("course.html", **context)
 
-@app.route('/registered_courses', methods =['GET'])
+
+@app.route('/add_review', methods=["POST"])
+def add_review():
+
+  feedback = request.form['feedback']
+  review_type = request.args['review_type']
+
+  if feedback:
+    if review_type == 'Course':
+      course_id = request.args['course_id']
+      today_date = datetime.today().strftime('%Y-%m-%d')   
+
+      insert_query = "Insert into review(review_type, feedback, date_of_review) values('Course','{}','{}')".format(feedback, today_date)
+      print(insert_query)
+      g.conn.execute(sqlalchemy.text(insert_query))
+
+      get_id = g.conn.execute("select review_id from review where feedback = (%s) and review_type = 'Course'", feedback)
+      review_id = get_id.fetchone()['review_id']
+
+      insert_query = "Insert into has(course_id, review_id, review_type) values('{}','{}','Course')".format(course_id, review_id)
+      print(insert_query)
+      g.conn.execute(sqlalchemy.text(insert_query))
+      return redirect(url_for('courses', course_id=course_id))
+    else:
+      prof_id = request.args['prof_id']
+      today_date = datetime.today().strftime('%Y-%m-%d')   
+
+      insert_query = "Insert into review(review_type, feedback, date_of_review) values('Professor','{}','{}')".format(feedback, today_date)
+      print(insert_query)
+      g.conn.execute(sqlalchemy.text(insert_query))
+
+      get_id = g.conn.execute("select review_id from review where feedback = (%s) and review_type = 'Professor'", feedback)
+      review_id = get_id.fetchone()['review_id']
+
+      insert_query = "Insert into gets(user_id, review_id, review_type) values('{}','{}','Professor')".format(prof_id, review_id)
+      print(insert_query)
+      g.conn.execute(sqlalchemy.text(insert_query))
+      return redirect(url_for('professors', prof_id=prof_id))
+  
+  
+
+
+@app.route('/registered_courses', methods=['GET'])
 def registered_courses():
   # context = dict(username = session['username'])
   if request.method == 'GET':
-    
     return render_template("registered_courses.html")
 
 if __name__ == "__main__":

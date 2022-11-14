@@ -83,6 +83,14 @@
     {% endif %}
   </div>
 
+  <div>
+    <h4>  Add Reviews </h3> 
+    <form action="{{url_for('add_review', course_id=course_details['course_id'], review_type='Course')}}" id="usrform" method="POST">
+      <textarea rows="4" cols="50" name="feedback" form="usrform" required></textarea>
+      <input type="submit">
+    </form>
+  </div>
+
 </body>
 
 
