@@ -239,6 +239,69 @@ def signUp():
   else:
     return render_template("signUp_page.html")
 
+@app.route('/professor_signIn', methods =['GET', 'POST'])
+def professor_signIn():
+  print('loggedin')
+  print('loggedin')
+  # if request.method == 'POST':
+  #   print('in post')
+  #   username = request.form['username']
+  #   password = request.form['password']
+  #   cursor = g.conn.execute('SELECT * FROM Professors WHERE username = %s ', (username, ))
+  #   account = cursor.fetchone()
+  #   print(1)
+  #   print(account)
+  #   if account:
+  #     # resp = make_response(redirect("/"))
+  #     # resp.set_cookie('username', username)
+  #     session['loggedin'] = True
+  #     session['username'] = account['username']
+  #     # session['name'] = account['first_name']
+  #     print(session['username'])
+  #     print('Logged in successfully !')
+  #     return redirect("/")
+  #   else:
+  #     print(3)
+  #     return render_template("professor_signin.html")
+  return render_template("professor_signin.html")
+
+
+@app.route('/professor_signUp', methods =['GET', 'POST'])
+def professor_signUp():
+  msg = 'Registered'
+  if request.method == 'POST':
+    userid = 102
+    d1 = date.today().strftime("%m/%d/%Y")
+    print("d1 =", d1)
+    firstname = request.form['firstname']
+    lastname = request.form['lastname']
+    username = request.form['username']
+    email = request.form['email']
+    gender = request.form['gender']
+    dob = request.form['dob']
+    phoneNo = request.form['phoneNo']
+    password = request.form['password']
+    yoe = request.form['yoe']
+    qualification = request.form['qualification']
+    research = request.form['research']
+    cursor = g.conn.execute('SELECT * FROM Professors WHERE username = %s', (username, ))
+    account_username = cursor.fetchone()
+    cursor.close()
+    cursor = g.conn.execute('SELECT * FROM Professors WHERE email = %s', (email, ))
+    account_email = cursor.fetchone()
+    cursor.close()
+    if account_email or account_username:
+      msg = 'Account already exists !'
+      print(msg)
+    else:
+      # g.conn.execute('INSERT INTO Students VALUES('123', 'af12','ak','kk','M','kk@gmail.com','1234',d1,'columbia', 'MS', 'CS', 'USA', )')
+      insert_query ="INSERT INTO Professors VALUES('{}','{}','{}','{}','{}','{}',{},'{}',{} ,'{}','{}')".format(userid, username, firstname, lastname, gender, email, phoneNo, dob, yoe, qualification, research)
+      print(insert_query)
+      g.conn.execute(sqlalchemy.text(insert_query))
+      print(msg)
+    return redirect("professor_signIn")
+  else:
+    return render_template("professor_signup.html")
 
 
 @app.route('/home', methods=['POST','GET'])
@@ -465,6 +528,8 @@ def registered_courses():
     print(reg_courses)
     context = dict(courses = reg_courses)
     return render_template("registered_courses.html", **context)
+
+
 
 if __name__ == "__main__":
   import click

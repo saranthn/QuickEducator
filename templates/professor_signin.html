@@ -18,14 +18,14 @@
 <body>
 	<div class="main">  	
 		<input type="checkbox" id="chk" aria-hidden="true">
-			<div class="signin">
-				<form action="signIn" method="post">
+			<div class="professor_signIn">
+				<form action="professor_signIn" method="post">
 					<label for="chk" aria-hidden="true">Sign In</label>
 					<input type="text" name="username" placeholder="User name" required="">
 					<input type="password" name="password" placeholder="Password" required="">
 					<button>Sign In</button>
-					<center><span class="login">Not a member <a href="{{ url_for('signUp') }}">Register here</a></span></center>
-					<center><span class="login_p">If Professor <a href="{{ url_for('professor_signIn') }}">Login here</a></span></center>
+					<center><span class="login">Not a member <a href="{{ url_for('professor_signUp') }}">Register here</a></span></center>
+					<center><span class="login">If Student <a href="{{ url_for('signIn') }}">Login here</a></span></center>
 				</form>
 			</div>
 
