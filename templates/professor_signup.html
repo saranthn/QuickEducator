@@ -18,8 +18,8 @@
 <body>
 	<div class="main">  	
 		<input type="checkbox" id="chk" aria-hidden="true">
-			<div class="signup">
-				<form action="signUp" method="post">
+			<div class="professor_signup">
+				<form action="professor_signUp" method="post">
 					<label for="chk" aria-hidden="true">Sign Up</label>
 					<input id="firstname" input type="text" name="firstname" placeholder="First name" required="">
 					<input id="lastname" input type="text" name="lastname" placeholder="Last name" required="">
@@ -27,15 +27,14 @@
 					<input id="email" input type="email" name="email" placeholder="Email" required="">
 					<input id="gender" input type="text" name="gender" placeholder="Gender" required="">
 				  <input id="dob" input type="date" name="dob" placeholder="DOB" required="">
-				  <input id="university" input type="text" name="university" placeholder="University" required="">
-				  <input id="degree" input type="text" name="degree" placeholder="Degree" required="">
-				  <input id="course" input type="text" name="course" placeholder="Course" required="">
-				  <input id="country" input type="text" name="country" placeholder="Country" required="">
+				  <input id="yoe" input type="number" name="yoe" placeholder="Years of Experience" required="">
+				  <input id="qualification" input type="text" name="qualification" placeholder="Qualification" required="">
+				  <input id="research" input type="text" name="research" placeholder="Research Area" required="">
 				  <input id="phoneNo" input type="number" name="phoneNo" placeholder="Phone Number" required="">
 					<input id="password" input type="password" name="password" placeholder="Password" required="">
 					<button>Sign up</button>
-					<center><span class="login">Already a member <a href="{{ url_for('signIn') }}">Sign In</a></span></center>
-					<center><span class="login">If Professor <a href="{{ url_for('professor_signUp') }}">Register here</a></span></center>
+					<center><span class="login">Already a member <a href="{{ url_for('professor_signIn') }}">Sign In</a></span></center>
+					<center><span class="login">If Student <a href="{{ url_for('signUp') }}">Register here</a></span></center>
 				</form>
 			</div>
 	</div>
