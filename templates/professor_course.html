@@ -1,0 +1,154 @@
+<html>
+
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    /* NAVBAR STYLING STARTS */
+    .navbar {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     padding: 20px;
+     background-color: #573b8a;
+     color: #fff;
+    }
+    .nav-links a {
+     color: #fff;
+    }
+    /* LOGO */
+    .logo {
+     font-size: 32px;
+    }
+    /* NAVBAR MENU */
+    .menu {
+     display: flex;
+     gap: 1em;
+     font-size: 18px;
+    }
+    .menu li:hover {
+     background-color: #573b8c;
+     border-radius: 5px;
+     transition: 0.3s ease;
+    }
+    .menu li {
+     padding: 5px 14px;
+    }
+    /* UTILITIES */
+    *{
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+    }
+    body {
+     font-family: cursive;
+    }
+    a {
+     text-decoration: none;
+     color: inherit;
+    }
+    li {
+     list-style: none;
+    }
+  </style>
+
+
+<body>
+    <nav class="navbar">
+     <!-- LOGO -->
+      <div class="logo"><a href="{{ url_for('professor_home') }}">QuickEducator</a></div>
+      <ul class="nav-links">
+        <!-- NAVIGATION MENUS -->
+        <div class="menu">
+          <li>Welcome Professor {{session.username}}</a></li>
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </div>
+      </ul>
+    </nav>
+
+  <div>
+    <h2>  {{course_details['course_name']}} </h2> 
+    <h4>  Rating: {{course_details['course_rating']}} </h4> 
+    <h4>  Domain: {{course_details['course_domain']}} </h4> 
+    <h4>  Difficulty: {{course_details['course_difficulty_level']}} </h4> 
+    <h4>  Fee($): {{course_details['course_fee']}} </h4> 
+  </div>
+
+  <div>
+    <h3>  Enrolled Students </h3> 
+      {% for n in students %}
+        <h4>{{n['first_name']}} {{n['last_name']}}</h4>
+      {% endfor %}
+  </div>
+
+  <div>
+    <h3>  Lectures </h3> 
+    {% if lectures %}
+    <table>
+      <tr>
+        <th>S. No</th>
+        <th>Lecture</th>
+        <th>Description</th>
+      </tr>
+      {% for n in lectures %}
+        <tr>
+          <td>{{n['lecture_id']}}</td>
+          <td>{{n['topic']}}</td>
+          <td>{{n['description']}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div>
+      No Lectures Available
+    </div>
+    {% endif %}
+  </div>
+
+  <div>
+  	<h4>  Add Lecture </h3> 
+    <form action="{{url_for('add_lecture', course_id=course_details['course_id'])}}" id="usrform" method="POST">
+    	<label for="topic">Topic:</label>
+    	<input type="text" name="topic">
+    	<label for="description">Description:</label>
+      <textarea rows="4" cols="50" name="description" form="usrform" required></textarea>
+      <input type="submit">
+    </form>
+  </div>
+
+  <div>
+    <h3>  Reviews </h3> 
+    {% if reviews %}
+    <table>
+      <tr>
+        <th>Date</th>
+        <th>Feedback</th>
+      </tr>
+      {% for n in reviews %}
+        <tr>
+          <td>{{n['date_of_review']}}</td>
+          <td>{{n['feedback']}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div>
+      No Reviews Available
+    </div>
+    {% endif %}
+  </div>
+
+</body>
+
+
+</html>
