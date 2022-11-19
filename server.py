@@ -153,26 +153,6 @@ def index():
   #
   return redirect("/home")
 
-#
-# This is an example of a different path.  You can see it at:
-#
-#     localhost:8111/another
-#
-# Notice that the function name is another() rather than index()
-# The functions for each app.route need to have different names
-#
-@app.route('/another')
-def another():
-  return render_template("another.html")
-
-
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test(name) VALUES (%s)', name)
-  return redirect('/')
-
 @app.route('/logout')
 def logout():
   session.pop('loggedin', None)
@@ -243,26 +223,26 @@ def signUp():
 def professor_signIn():
   print('loggedin')
   print('loggedin')
-  # if request.method == 'POST':
-  #   print('in post')
-  #   username = request.form['username']
-  #   password = request.form['password']
-  #   cursor = g.conn.execute('SELECT * FROM Professors WHERE username = %s ', (username, ))
-  #   account = cursor.fetchone()
-  #   print(1)
-  #   print(account)
-  #   if account:
-  #     # resp = make_response(redirect("/"))
-  #     # resp.set_cookie('username', username)
-  #     session['loggedin'] = True
-  #     session['username'] = account['username']
-  #     # session['name'] = account['first_name']
-  #     print(session['username'])
-  #     print('Logged in successfully !')
-  #     return redirect("/")
-  #   else:
-  #     print(3)
-  #     return render_template("professor_signin.html")
+  if request.method == 'POST':
+    print('in post')
+    username = request.form['username']
+    password = request.form['password']
+    cursor = g.conn.execute('SELECT * FROM Professors WHERE username = %s ', (username, ))
+    account = cursor.fetchone()
+    print(1)
+    print(account)
+    if account:
+      # resp = make_response(redirect("/"))
+      # resp.set_cookie('username', username)
+      session['loggedin'] = True
+      session['username'] = account['username']
+      # session['name'] = account['first_name']
+      print(session['username'])
+      print('Logged in successfully !')
+      return redirect("/professor_home")
+    else:
+      print(3)
+      return render_template("professor_signin.html")
   return render_template("professor_signin.html")
 
 
@@ -341,6 +321,84 @@ def home():
     cursor.close()
     context = dict(courses = course_names, professors = prof_names)
     return render_template("home.html", **context)
+
+
+@app.route('/professor_home', methods=['POST','GET'])
+def professor_home():
+  if request.method == 'GET':
+    if session:
+      prof_user_name = session['username']
+      search_query = "select * from courses c,teaches t,professors p where c.course_id = t.course_id and t.user_id = p.user_id and p.username = '{}'".format(prof_user_name)
+      cursor = g.conn.execute(sqlalchemy.text(search_query))
+      courses = []
+      for result in cursor:
+        courses.append(result)  # can also be accessed using result[0]
+      cursor.close()
+      context = dict(courses = courses)
+      return render_template("professor_home.html", **context)
+    else:
+      return redirect("/professor_signIn")
+
+
+@app.route('/professor/courses')
+def professor_courses():
+  course_id = request.args.get('course_id')
+  #print(course_id)
+  
+  cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
+  course_details = cursor.fetchone()
+  #print(course_details)
+
+  cursor = g.conn.execute('Select * from students where user_id in (select user_id from registers where course_id = (%s))', course_id)
+  students = []
+  for result in cursor:
+    students.append(result)
+  cursor.close()
+  #print(professors)
+
+  cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
+  lectures = []
+  for result in cursor:
+    lectures.append(result)
+  cursor.close()
+  #print(lectures)
+
+  cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
+  reviews = []
+  for result in cursor:
+    reviews.append(result)
+  cursor.close()
+  #print(reviews)
+
+  context = dict(course_details = course_details, students = students, lectures = lectures, reviews = reviews)
+  return render_template("professor_course.html", **context)
+
+
+@app.route('/add_lecture', methods=["POST"])
+def add_lecture():
+
+  topic = request.form['topic']
+  description = request.form['description']
+  course_id = request.args['course_id']
+
+  if topic and description:
+    course_id = request.args['course_id']
+    today_date = datetime.today().strftime('%Y-%m-%d')   
+
+    select_max_id = "Select max(lecture_id) as max_id from lectures_contains where course_id = '{}'".format(course_id)
+    cursor = g.conn.execute(select_max_id)
+    max_id = cursor.fetchone()['max_id']
+
+    if max_id:
+      print(max_id)
+      next_id = int(max_id)+1
+    else:
+      next_id = 1
+
+    insert_query = "Insert into lectures_contains(lecture_id, topic, description, course_id) values('{}','{}','{}','{}')".format(next_id, topic, description, course_id)
+    print(insert_query)
+    g.conn.execute(sqlalchemy.text(insert_query))
+    return redirect(url_for('professor_courses', course_id=course_id))
 
 
 @app.route('/professors')

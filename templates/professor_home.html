@@ -1,0 +1,112 @@
+<html>
+
+  <style>
+
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    #search {
+      width: 70%;
+      height: 50px;
+      border-radius: 25px;
+      padding-left: 20px;
+    }
+    .block {
+      width: 33%;
+      float:left;
+    }
+    .top {
+      margin-top: 20px;
+    }
+
+      /* NAVBAR STYLING STARTS */
+    .navbar {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     padding: 20px;
+     background-color: #573b8a;
+     color: #fff;
+    }
+    .nav-links a {
+     color: #fff;
+    }
+    /* LOGO */
+    .logo {
+     font-size: 32px;
+    }
+    /* NAVBAR MENU */
+    .menu {
+     display: flex;
+     gap: 1em;
+     font-size: 18px;
+    }
+    .menu li:hover {
+     background-color: #573b8c;
+     border-radius: 5px;
+     transition: 0.3s ease;
+    }
+    .menu li {
+     padding: 5px 14px;
+    }
+    /* UTILITIES */
+    *{
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+    }
+    body {
+     font-family: cursive;
+    }
+    a {
+     text-decoration: none;
+     color: inherit;
+    }
+    li {
+     list-style: none;
+    }
+
+  </style>
+
+
+<body>
+  <nav class="navbar">
+     <!-- LOGO -->
+      <div class="logo"><a href="{{ url_for('professor_home') }}">QuickEducator</a></div>
+      <ul class="nav-links">
+        <!-- NAVIGATION MENUS -->
+        <div class="menu">
+          <li>Welcome Professor {{session.username}}</a></li>
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </div>
+      </ul>
+  </nav>
+
+  {% if courses is defined %}
+  <table>
+    <tr>
+      <th>Course</th>
+    </tr>
+    {% for n in courses %}
+      <tr>
+        <td><a href="{{url_for('professor_courses', course_id=n['course_id'])}}">{{n['course_name']}}</a></td>
+      </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  {% endif %}
+
+</body>
+
+
+</html>
