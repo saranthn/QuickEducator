@@ -217,7 +217,7 @@ def signUp():
       print(msg)
     return redirect("signIn")
   else:
-    return render_template("signUp_page.html")
+    return render_template("signup_page.html")
 
 @app.route('/professor_signIn', methods =['GET', 'POST'])
 def professor_signIn():
