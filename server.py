@@ -12,7 +12,7 @@ import os
   # accessible as a variable in index.html:
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response, url_for, make_response, session
+from flask import Flask, request, render_template, g, redirect, Response, url_for, make_response, session, flash
 from datetime import date, datetime
 import sqlalchemy
 
@@ -168,7 +168,7 @@ def signIn():
     cursor = g.conn.execute('SELECT * FROM Students WHERE username = %s ', (username, ))
     account = cursor.fetchone()
     # print(account)
-    if account:
+    if account and (username == account['username'] and password == account['password']):
       # resp = make_response(redirect("/"))
       # resp.set_cookie('username', username)
       session['loggedin'] = True
@@ -178,6 +178,7 @@ def signIn():
       print('Logged in successfully !')
       return redirect("/")
     else:
+      flash('Invalid username/password')
       return render_template("signin_page.html")
   return render_template("signin_page.html")
 
@@ -185,7 +186,6 @@ def signIn():
 def signUp():
   msg = 'Registered'
   if request.method == 'POST':
-    userid = 100
     d1 = date.today().strftime("%m/%d/%Y")
     print("d1 =", d1)
     firstname = request.form['firstname']
@@ -211,7 +211,7 @@ def signUp():
       print(msg)
     else:
       # g.conn.execute('INSERT INTO Students VALUES('123', 'af12','ak','kk','M','kk@gmail.com','1234',d1,'columbia', 'MS', 'CS', 'USA', )')
-      insert_query ="INSERT INTO Students VALUES('{}','{}','{}','{}','{}','{}',{},'{}','{}','{}','{}','{}')".format(userid, username,firstname,lastname,gender,email,phoneNo,dob,university, degree, course, country)
+      insert_query ="INSERT INTO Students(username, first_name, last_name, gender, email, contact_no, DOB, university, degree, course, country, password) VALUES('{}','{}','{}','{}','{}',{},'{}','{}','{}','{}','{}','{}')".format(username,firstname,lastname,gender,email,phoneNo,dob,university, degree, course, country, password)
       print(insert_query)
       g.conn.execute(sqlalchemy.text(insert_query))
       print(msg)
@@ -229,9 +229,9 @@ def professor_signIn():
     password = request.form['password']
     cursor = g.conn.execute('SELECT * FROM Professors WHERE username = %s ', (username, ))
     account = cursor.fetchone()
-    print(1)
-    print(account)
-    if account:
+    # print(1)
+    # print(account)
+    if account and (username == account['username'] and password == account['password']):
       # resp = make_response(redirect("/"))
       # resp.set_cookie('username', username)
       session['loggedin'] = True
@@ -241,7 +241,7 @@ def professor_signIn():
       print('Logged in successfully !')
       return redirect("/professor_home")
     else:
-      print(3)
+      flash('Invalid username/password')
       return render_template("professor_signin.html")
   return render_template("professor_signin.html")
 
@@ -250,7 +250,6 @@ def professor_signIn():
 def professor_signUp():
   msg = 'Registered'
   if request.method == 'POST':
-    userid = 102
     d1 = date.today().strftime("%m/%d/%Y")
     print("d1 =", d1)
     firstname = request.form['firstname']
@@ -275,7 +274,7 @@ def professor_signUp():
       print(msg)
     else:
       # g.conn.execute('INSERT INTO Students VALUES('123', 'af12','ak','kk','M','kk@gmail.com','1234',d1,'columbia', 'MS', 'CS', 'USA', )')
-      insert_query ="INSERT INTO Professors VALUES('{}','{}','{}','{}','{}','{}',{},'{}',{} ,'{}','{}')".format(userid, username, firstname, lastname, gender, email, phoneNo, dob, yoe, qualification, research)
+      insert_query ="INSERT INTO Professors(username, first_name, last_name, gender, email, contact_no, DOB, years_of_experience, qualification, research_area, password) VALUES('{}','{}','{}','{}','{}',{},'{}',{} ,'{}','{}','{}')".format(username, firstname, lastname, gender, email, phoneNo, dob, yoe, qualification, research, password)
       print(insert_query)
       g.conn.execute(sqlalchemy.text(insert_query))
       print(msg)
