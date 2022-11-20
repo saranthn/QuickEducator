@@ -285,10 +285,10 @@ def home():
       print(userid)
 
       cursor = g.conn.execute("select * from registers r, courses c where r.course_id = c.course_id and r.status = 'Enrolled' and r.user_id = %s order by c.course_rating desc limit 1", (userid, ))
-      domain = cursor.fetchone()['course_domain']
+      domain = cursor.fetchone()
       print(domain)
       if domain:
-        rec = domain[0]
+        rec = domain['course_domain'][0]
       else:
         rec = "Computer Science"
 
