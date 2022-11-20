@@ -165,15 +165,12 @@ def signIn():
   if request.method == 'POST':
     username = request.form['username']
     password = request.form['password']
-    cursor = g.conn.execute('SELECT * FROM Students WHERE username = %s ', (username, ))
+    args = (username, )
+    cursor = g.conn.execute('SELECT * FROM Students WHERE username = %s ', args)
     account = cursor.fetchone()
-    # print(account)
     if account and (username == account['username'] and password == account['password']):
-      # resp = make_response(redirect("/"))
-      # resp.set_cookie('username', username)
       session['loggedin'] = True
       session['username'] = account['username']
-      # session['name'] = account['first_name']
       print(session['username'])
       print('Logged in successfully !')
       return redirect("/")
@@ -210,10 +207,7 @@ def signUp():
       msg = 'Account already exists !'
       print(msg)
     else:
-      # g.conn.execute('INSERT INTO Students VALUES('123', 'af12','ak','kk','M','kk@gmail.com','1234',d1,'columbia', 'MS', 'CS', 'USA', )')
-      insert_query ="INSERT INTO Students(username, first_name, last_name, gender, email, contact_no, DOB, university, degree, course, country, password) VALUES('{}','{}','{}','{}','{}',{},'{}','{}','{}','{}','{}','{}')".format(username,firstname,lastname,gender,email,phoneNo,dob,university, degree, course, country, password)
-      print(insert_query)
-      g.conn.execute(sqlalchemy.text(insert_query))
+      g.conn.execute("INSERT INTO Students(username, first_name, last_name, gender, email, contact_no, DOB, university, degree, course, country, password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (username,firstname,lastname,gender,email,phoneNo,dob,university, degree, course, country, password))
       print(msg)
     return redirect("signIn")
   else:
@@ -229,14 +223,9 @@ def professor_signIn():
     password = request.form['password']
     cursor = g.conn.execute('SELECT * FROM Professors WHERE username = %s ', (username, ))
     account = cursor.fetchone()
-    # print(1)
-    # print(account)
     if account and (username == account['username'] and password == account['password']):
-      # resp = make_response(redirect("/"))
-      # resp.set_cookie('username', username)
       session['loggedin'] = True
       session['username'] = account['username']
-      # session['name'] = account['first_name']
       print(session['username'])
       print('Logged in successfully !')
       return redirect("/professor_home")
@@ -273,10 +262,7 @@ def professor_signUp():
       msg = 'Account already exists !'
       print(msg)
     else:
-      # g.conn.execute('INSERT INTO Students VALUES('123', 'af12','ak','kk','M','kk@gmail.com','1234',d1,'columbia', 'MS', 'CS', 'USA', )')
-      insert_query ="INSERT INTO Professors(username, first_name, last_name, gender, email, contact_no, DOB, years_of_experience, qualification, research_area, password) VALUES('{}','{}','{}','{}','{}',{},'{}',{} ,'{}','{}','{}')".format(username, firstname, lastname, gender, email, phoneNo, dob, yoe, qualification, research, password)
-      print(insert_query)
-      g.conn.execute(sqlalchemy.text(insert_query))
+      g.conn.execute("INSERT INTO Professors(username, first_name, last_name, gender, email, contact_no, DOB, years_of_experience, qualification, research_area, password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (username, firstname, lastname, gender, email, phoneNo, dob, yoe, qualification, research, password))
       print(msg)
     return redirect("professor_signIn")
   else:
@@ -285,11 +271,10 @@ def professor_signUp():
 
 @app.route('/home', methods=['POST','GET'])
 def home():
-  search_query = "select * from professors"
-  cursor = g.conn.execute(sqlalchemy.text(search_query))
+  cursor = g.conn.execute("select * from professors")
   prof_names = []
   for result in cursor:
-    prof_names.append(result)  # can also be accessed using result[0]
+    prof_names.append(result)
   cursor.close()
   print(session)
   if request.method == 'GET':
@@ -305,15 +290,20 @@ def home():
     order = request.form['order']
     prof = request.form['prof']
 
-    search_query = "select * from courses c,teaches t,professors p where c.course_name ilike '%{}%' and c.course_difficulty_level ilike '%{}%' and c.course_id = t.course_id and t.user_id = p.user_id ".format(name, difficulty)
+    name = "%{}%".format(name)
+    difficulty = "%{}%".format(difficulty)
+
+    args = (name, difficulty)
+    query = "select * from courses c,teaches t,professors p where c.course_name ilike %s and c.course_difficulty_level ilike %s and c.course_id = t.course_id and t.user_id = p.user_id "
 
     if prof:
-      search_query += "and p.user_id = '{}'".format(prof)
-    print(search_query)
+      query += "and p.user_id = %s"
+      args = (name, difficulty, prof)
     if sort:
-      search_query += "order by {} {}".format(sort, order)
+      query += "order by {} {}".format(sort, order)
 
-    cursor = g.conn.execute(sqlalchemy.text(search_query))
+    print(query)  
+    cursor = g.conn.execute(query, args)
     course_names = []
     for result in cursor:
       course_names.append(result)  # can also be accessed using result[0]
@@ -327,11 +317,10 @@ def professor_home():
   if request.method == 'GET':
     if session:
       prof_user_name = session['username']
-      search_query = "select * from courses c,teaches t,professors p where c.course_id = t.course_id and t.user_id = p.user_id and p.username = '{}'".format(prof_user_name)
-      cursor = g.conn.execute(sqlalchemy.text(search_query))
+      cursor = g.conn.execute("select * from courses c,teaches t,professors p where c.course_id = t.course_id and t.user_id = p.user_id and p.username = %s", (prof_user_name, ))
       courses = []
       for result in cursor:
-        courses.append(result)  # can also be accessed using result[0]
+        courses.append(result)
       cursor.close()
       context = dict(courses = courses)
       print(courses)
@@ -382,9 +371,7 @@ def add_lecture():
   course_id = request.args['course_id']
 
   if topic and description:
-
-    select_max_id = "Select max(lecture_id) as max_id from lectures_contains where course_id = '{}'".format(course_id)
-    cursor = g.conn.execute(select_max_id)
+    cursor = g.conn.execute("Select max(lecture_id) as max_id from lectures_contains where course_id = %s", (course_id, ))
     max_id = cursor.fetchone()['max_id']
 
     if max_id:
@@ -393,10 +380,8 @@ def add_lecture():
     else:
       next_id = 1
 
-    insert_query = "Insert into lectures_contains(lecture_id, topic, description, course_id) values('{}','{}','{}','{}')".format(next_id, topic, description, course_id)
-    print(insert_query)
-    g.conn.execute(sqlalchemy.text(insert_query))
-    return redirect(url_for('professor_home', course_id=course_id))
+    g.conn.execute("Insert into lectures_contains(lecture_id, topic, description, course_id) values(%s, %s, %s, %s)", (next_id, topic, description, course_id))
+    return redirect(url_for('professor_courses', course_id=course_id))
 
 
 @app.route('/add_course', methods=["POST"])
@@ -409,9 +394,7 @@ def add_course():
 
   if course_name and course_fee:
     domains = [course_domain]
-    insert_query = "Insert into courses(course_name, course_rating, course_domain, course_difficulty_level, course_fee) values('{}',5, ARRAY {},'{}', {})".format(course_name, domains, difficulty, course_fee)
-    print(insert_query)
-    g.conn.execute(sqlalchemy.text(insert_query))
+    g.conn.execute("Insert into courses(course_name, course_rating, course_domain, course_difficulty_level, course_fee) values(%s, 5, %s, %s, %s)", (course_name, domains, difficulty, course_fee))
 
     cursor = g.conn.execute("SELECT last_value FROM course_id_seq;")
     curr_course_id = cursor.fetchone()['last_value']
@@ -524,31 +507,23 @@ def add_review():
       course_id = request.args['course_id']
       today_date = datetime.today().strftime('%Y-%m-%d')   
 
-      insert_query = "Insert into review(review_type, feedback, date_of_review) values('Course','{}','{}')".format(feedback, today_date)
-      print(insert_query)
-      g.conn.execute(sqlalchemy.text(insert_query))
+      g.conn.execute("Insert into review(review_type, feedback, date_of_review) values('Course', %s, %s)", (feedback, today_date))
 
       cursor = g.conn.execute("SELECT last_value FROM review_id_seq;")
       review_id = cursor.fetchone()['last_value']
 
-      insert_query = "Insert into has(course_id, review_id, review_type) values('{}','{}','Course')".format(course_id, review_id)
-      print(insert_query)
-      g.conn.execute(sqlalchemy.text(insert_query))
+      g.conn.execute("Insert into has(course_id, review_id, review_type) values(%s, %s,'Course')", (course_id, review_id))
       return redirect(url_for('courses', course_id=course_id))
     else:
       prof_id = request.args['prof_id']
       today_date = datetime.today().strftime('%Y-%m-%d')   
 
-      insert_query = "Insert into review(review_type, feedback, date_of_review) values('Professor','{}','{}')".format(feedback, today_date)
-      print(insert_query)
-      g.conn.execute(sqlalchemy.text(insert_query))
+      g.conn.execute("Insert into review(review_type, feedback, date_of_review) values('Professor', %s, %s)", (feedback, today_date))
 
       cursor = g.conn.execute("SELECT last_value FROM review_id_seq;")
       review_id = cursor.fetchone()['last_value']
 
-      insert_query = "Insert into gets(user_id, review_id, review_type) values('{}','{}','Professor')".format(prof_id, review_id)
-      print(insert_query)
-      g.conn.execute(sqlalchemy.text(insert_query))
+      g.conn.execute("Insert into gets(user_id, review_id, review_type) values(%s, %s,'Professor')", (prof_id, review_id))
       return redirect(url_for('professors', prof_id=prof_id))
   
   
@@ -568,11 +543,9 @@ def enroll():
   today_date = datetime.today().strftime('%Y-%m-%d') 
 
   if results:
-    query = "update registers set status='Enrolled',reg_date='{}' where user_id = '{}' and course_id = '{}'".format(today_date,user_id, course_id)
+    g.conn.execute("update registers set status='Enrolled',reg_date = %s where user_id = %s and course_id = %s", (today_date, user_id, course_id))
   else:
-    query = "Insert into registers(user_id, course_id, status, reg_date) values('{}','{}','{}','{}')".format(user_id, course_id, 'Enrolled', today_date)   
-  print(query)
-  g.conn.execute(sqlalchemy.text(query))
+    g.conn.execute("Insert into registers(user_id, course_id, status, reg_date) values(%s, %s, 'Enrolled', %s)", (user_id, course_id, today_date))  
   return redirect(url_for('courses', course_id=course_id))
 
 
@@ -593,11 +566,10 @@ def add_wishlist():
   today_date = datetime.today().strftime('%Y-%m-%d')   
 
   if results:
-    query = "update registers set status='Wishlist',reg_date='{}' where user_id = '{}' and course_id = '{}'".format(today_date,user_id, course_id)
+    g.conn.execute("update registers set status='Wishlist',reg_date = %s where user_id = %s and course_id = %s", (today_date, user_id, course_id))
   else:
-    query = "Insert into registers(user_id, course_id, status, reg_date) values('{}','{}','{}','{}')".format(user_id, course_id, 'Wishlist', today_date)   
-  print(query)
-  g.conn.execute(sqlalchemy.text(query))
+    g.conn.execute("Insert into registers(user_id, course_id, status, reg_date) values(%s, %s, 'Wishlist', %s)", (user_id, course_id, today_date))  
+  
   return redirect(url_for('courses', course_id=course_id))
 
 
