@@ -428,6 +428,18 @@ def add_course():
 
     return redirect(url_for('professor_home'))
 
+
+@app.route('/delete_course', methods=["POST"])
+def delete_course():
+
+  course_id = request.args['course_id']
+  g.conn.execute('delete from registers where course_id = (%s)', course_id)
+  g.conn.execute('delete from teaches where course_id = (%s)', course_id)
+  g.conn.execute('delete from has where course_id = (%s)', course_id)
+  g.conn.execute('delete from courses where course_id = (%s)', course_id)
+  return redirect(url_for('professor_home'))
+
+
 @app.route('/delete_lecture', methods=["POST"])
 def delete_lecture():
   course_id = request.args['course_id']
