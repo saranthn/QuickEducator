@@ -94,6 +94,30 @@
   </nav>
 
   <div>
+    <h2> Recommendations </h2>
+    {% if rec_course_names is defined %}
+    <table>
+      <tr>
+        <th>Course</th>
+        <th>Course fee</th>
+        <th>Course Difficulty</th>
+        <th>Course Rating</th>
+      </tr>
+      {% for n in rec_course_names %}
+        <tr>
+          <td><a href="{{url_for('courses', course_id=n['course_id'])}}">{{n['course_name']}}</a></td>
+          <td>{{n['course_fee']}}</td>
+          <td>{{n['course_difficulty_level']}}</td>
+          <td>{{n['course_rating']}}</td>
+        </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div>No recommendations available</div>
+    {% endif %}
+  </div>
+
+  <div>
     <h2>  Courses </h2> 
     <form method="POST" action="/home">
       <div class="top">
