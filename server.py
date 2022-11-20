@@ -279,7 +279,26 @@ def home():
   print(session)
   if request.method == 'GET':
     if session:
-      context = dict(professors = prof_names)
+      user_name = session['username']
+      cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
+      userid = cursor.fetchone()['user_id']
+      print(userid)
+
+      cursor = g.conn.execute("select * from registers r, courses c where r.course_id = c.course_id and r.status = 'Enrolled' and r.user_id = %s order by c.course_rating desc limit 1", (userid, ))
+      domain = cursor.fetchone()['course_domain']
+      print(domain)
+      if domain:
+        rec = domain[0]
+      else:
+        rec = "Computer Science"
+
+      cursor = g.conn.execute("select * from courses where %s=ANY(course_domain) order by course_rating desc limit 3", (rec, ))
+      rec_course_names = []
+      for result in cursor:
+        rec_course_names.append(result)
+      cursor.close()
+      print(rec_course_names)
+      context = dict(professors = prof_names, rec_course_names = rec_course_names)
       return render_template("home.html", **context)
     else:
       return redirect("signIn")
@@ -306,7 +325,7 @@ def home():
     cursor = g.conn.execute(query, args)
     course_names = []
     for result in cursor:
-      course_names.append(result)  # can also be accessed using result[0]
+      course_names.append(result)
     cursor.close()
     context = dict(courses = course_names, professors = prof_names)
     return render_template("home.html", **context)
