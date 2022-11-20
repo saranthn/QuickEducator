@@ -335,6 +335,7 @@ def professor_home():
         courses.append(result)  # can also be accessed using result[0]
       cursor.close()
       context = dict(courses = courses)
+      print(courses)
       return render_template("professor_home.html", **context)
     else:
       return redirect("/professor_signIn")
@@ -382,8 +383,6 @@ def add_lecture():
   course_id = request.args['course_id']
 
   if topic and description:
-    course_id = request.args['course_id']
-    today_date = datetime.today().strftime('%Y-%m-%d')   
 
     select_max_id = "Select max(lecture_id) as max_id from lectures_contains where course_id = '{}'".format(course_id)
     cursor = g.conn.execute(select_max_id)
@@ -398,7 +397,43 @@ def add_lecture():
     insert_query = "Insert into lectures_contains(lecture_id, topic, description, course_id) values('{}','{}','{}','{}')".format(next_id, topic, description, course_id)
     print(insert_query)
     g.conn.execute(sqlalchemy.text(insert_query))
-    return redirect(url_for('professor_courses', course_id=course_id))
+    return redirect(url_for('professor_home', course_id=course_id))
+
+
+@app.route('/add_course', methods=["POST"])
+def add_course():
+
+  course_name = request.form['course_name']
+  course_fee = request.form['course_fee']
+  difficulty = request.form['difficulty']
+  course_domain = request.form['course_domain']
+
+  if course_name and course_fee:
+    domains = [course_domain]
+    insert_query = "Insert into courses(course_name, course_rating, course_domain, course_difficulty_level, course_fee) values('{}',5, ARRAY {},'{}', {})".format(course_name, domains, difficulty, course_fee)
+    print(insert_query)
+    g.conn.execute(sqlalchemy.text(insert_query))
+
+    cursor = g.conn.execute("SELECT last_value FROM course_id_seq;")
+    curr_course_id = cursor.fetchone()['last_value']
+    print(curr_course_id)
+
+    user_name = session['username']
+    cursor = g.conn.execute('Select user_id from professors where username = (%s)', user_name)
+    userid = cursor.fetchone()['user_id']
+    print(userid)
+
+    g.conn.execute('INSERT into teaches(user_id, course_id) VALUES ((%s), (%s))', userid, curr_course_id)
+
+    return redirect(url_for('professor_home'))
+
+@app.route('/delete_lecture', methods=["POST"])
+def delete_lecture():
+  course_id = request.args['course_id']
+  lecture_id = request.args['lecture_id']
+
+  g.conn.execute('delete from lectures_contains where lecture_id = (%s) and course_id = (%s)', lecture_id, course_id)
+  return redirect(url_for('professor_courses', course_id=course_id))
 
 
 @app.route('/professors')
@@ -494,8 +529,8 @@ def add_review():
       print(insert_query)
       g.conn.execute(sqlalchemy.text(insert_query))
 
-      get_id = g.conn.execute("select review_id from review where feedback = (%s) and review_type = 'Course'", feedback)
-      review_id = get_id.fetchone()['review_id']
+      cursor = g.conn.execute("SELECT last_value FROM review_id_seq;")
+      review_id = cursor.fetchone()['last_value']
 
       insert_query = "Insert into has(course_id, review_id, review_type) values('{}','{}','Course')".format(course_id, review_id)
       print(insert_query)
@@ -509,8 +544,8 @@ def add_review():
       print(insert_query)
       g.conn.execute(sqlalchemy.text(insert_query))
 
-      get_id = g.conn.execute("select review_id from review where feedback = (%s) and review_type = 'Professor'", feedback)
-      review_id = get_id.fetchone()['review_id']
+      cursor = g.conn.execute("SELECT last_value FROM review_id_seq;")
+      review_id = cursor.fetchone()['last_value']
 
       insert_query = "Insert into gets(user_id, review_id, review_type) values('{}','{}','Professor')".format(prof_id, review_id)
       print(insert_query)

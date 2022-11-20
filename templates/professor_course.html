@@ -105,6 +105,9 @@
           <td>{{n['lecture_id']}}</td>
           <td>{{n['topic']}}</td>
           <td>{{n['description']}}</td>
+          <form action="{{url_for('delete_lecture', course_id=course_details['course_id'], lecture_id=n['lecture_id'])}}" method="POST">
+          <td><button onclick="{{url_for('delete_lecture', course_id=course_details['course_id'], lecture_id=n['lecture_id'])}}">Delete</button></td>
+          </form>
         </tr>
       {% endfor %}
     </table>
@@ -116,7 +119,7 @@
   </div>
 
   <div>
-  	<h4>  Add Lecture </h3> 
+  	<h4> Add Lecture </h3> 
     <form action="{{url_for('add_lecture', course_id=course_details['course_id'])}}" id="usrform" method="POST">
     	<label for="topic">Topic:</label>
     	<input type="text" name="topic">
