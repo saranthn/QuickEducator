@@ -490,7 +490,7 @@ def delete_lecture():
 @app.route('/professors')
 def professors():
   if session:
-    if session['usertype'] == 'professor':
+    if session['usertype'] == 'student':
       prof_id = request.args.get('prof_id')
       print(prof_id)
       
@@ -519,7 +519,7 @@ def professors():
       context = dict(prof_details = prof_details, org_details = org_details, courses = courses, reviews = reviews)
       return render_template("professor.html", **context)
     else:
-      return redirect('/')
+      return redirect('/professor_home')
   else:
     return redirect('/')
 
