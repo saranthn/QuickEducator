@@ -158,6 +158,7 @@ def logout():
   session.pop('loggedin', None)
   session.pop('id', None)
   session.pop('username', None)
+  session.pop('usertype', None)
   return redirect(url_for('signIn'))
 
 @app.route('/signIn', methods =['GET', 'POST'])
@@ -171,13 +172,21 @@ def signIn():
     if account and (username == account['username'] and password == account['password']):
       session['loggedin'] = True
       session['username'] = account['username']
+      session['usertype'] = 'student'
       print(session['username'])
       print('Logged in successfully !')
       return redirect("/")
     else:
       flash('Invalid username/password')
       return render_template("signin_page.html")
-  return render_template("signin_page.html")
+  else:
+    if session:
+      if session['usertype'] == 'student':
+        return redirect("/")
+      else:
+        return redirect("/professor_home")
+    else:
+      return render_template("signin_page.html")
 
 @app.route('/signUp', methods =['GET', 'POST'])
 def signUp():
@@ -211,7 +220,13 @@ def signUp():
       print(msg)
     return redirect("signIn")
   else:
-    return render_template("signUp_page.html")
+    if session:
+      if session['usertype'] == 'student':
+        return redirect("/")
+      else:
+        return redirect("/professor_home")
+    else:
+      return render_template("signUp_page.html")
 
 @app.route('/professor_signIn', methods =['GET', 'POST'])
 def professor_signIn():
@@ -226,13 +241,21 @@ def professor_signIn():
     if account and (username == account['username'] and password == account['password']):
       session['loggedin'] = True
       session['username'] = account['username']
+      session['usertype'] = 'professor'
       print(session['username'])
       print('Logged in successfully !')
       return redirect("/professor_home")
     else:
       flash('Invalid username/password')
       return render_template("professor_signin.html")
-  return render_template("professor_signin.html")
+  else:
+    if session:
+      if session['usertype'] == 'student':
+        return redirect("/")
+      else:
+        return redirect("/professor_home")
+    else:
+      return render_template("professor_signin.html")
 
 
 @app.route('/professor_signUp', methods =['GET', 'POST'])
@@ -266,7 +289,13 @@ def professor_signUp():
       print(msg)
     return redirect("professor_signIn")
   else:
-    return render_template("professor_signup.html")
+    if session:
+      if session['usertype'] == 'student':
+        return redirect("/")
+      else:
+        return redirect("/professor_home")
+    else:
+      return render_template("professor_signup.html")
 
 
 @app.route('/home', methods=['POST','GET'])
@@ -279,27 +308,30 @@ def home():
   print(session)
   if request.method == 'GET':
     if session:
-      user_name = session['username']
-      cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
-      userid = cursor.fetchone()['user_id']
-      print(userid)
+      if session['usertype'] == 'student':
+        user_name = session['username']
+        cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
+        userid = cursor.fetchone()['user_id']
+        print(userid)
 
-      cursor = g.conn.execute("select * from registers r, courses c where r.course_id = c.course_id and r.status = 'Enrolled' and r.user_id = %s order by c.course_rating desc limit 1", (userid, ))
-      domain = cursor.fetchone()
-      print(domain)
-      if domain:
-        rec = domain['course_domain'][0]
+        cursor = g.conn.execute("select * from registers r, courses c where r.course_id = c.course_id and r.status = 'Enrolled' and r.user_id = %s order by c.course_rating desc limit 1", (userid, ))
+        domain = cursor.fetchone()
+        print(domain)
+        if domain:
+          rec = domain['course_domain'][0]
+        else:
+          rec = "Computer Science"
+
+        cursor = g.conn.execute("select * from courses where %s=ANY(course_domain) order by course_rating desc limit 3", (rec, ))
+        rec_course_names = []
+        for result in cursor:
+          rec_course_names.append(result)
+        cursor.close()
+        print(rec_course_names)
+        context = dict(professors = prof_names, rec_course_names = rec_course_names)
+        return render_template("home.html", **context)
       else:
-        rec = "Computer Science"
-
-      cursor = g.conn.execute("select * from courses where %s=ANY(course_domain) order by course_rating desc limit 3", (rec, ))
-      rec_course_names = []
-      for result in cursor:
-        rec_course_names.append(result)
-      cursor.close()
-      print(rec_course_names)
-      context = dict(professors = prof_names, rec_course_names = rec_course_names)
-      return render_template("home.html", **context)
+        return redirect("/professor_home")
     else:
       return redirect("signIn")
   else:
@@ -335,51 +367,57 @@ def home():
 def professor_home():
   if request.method == 'GET':
     if session:
-      prof_user_name = session['username']
-      cursor = g.conn.execute("select * from courses c,teaches t,professors p where c.course_id = t.course_id and t.user_id = p.user_id and p.username = %s", (prof_user_name, ))
-      courses = []
-      for result in cursor:
-        courses.append(result)
-      cursor.close()
-      context = dict(courses = courses)
-      print(courses)
-      return render_template("professor_home.html", **context)
+      if session['usertype'] == 'professor':
+        prof_user_name = session['username']
+        cursor = g.conn.execute("select * from courses c,teaches t,professors p where c.course_id = t.course_id and t.user_id = p.user_id and p.username = %s", (prof_user_name, ))
+        courses = []
+        for result in cursor:
+          courses.append(result)
+        cursor.close()
+        context = dict(courses = courses)
+        print(courses)
+        return render_template("professor_home.html", **context)
+      else:
+        return redirect("/")
     else:
       return redirect("/professor_signIn")
 
 
 @app.route('/professor/courses')
 def professor_courses():
-  course_id = request.args.get('course_id')
-  #print(course_id)
-  
-  cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
-  course_details = cursor.fetchone()
-  #print(course_details)
+  if session and session['usertype'] == 'professor':
+    course_id = request.args.get('course_id')
+    #print(course_id)
+    
+    cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
+    course_details = cursor.fetchone()
+    #print(course_details)
 
-  cursor = g.conn.execute('Select * from students where user_id in (select user_id from registers where course_id = (%s))', course_id)
-  students = []
-  for result in cursor:
-    students.append(result)
-  cursor.close()
-  #print(professors)
+    cursor = g.conn.execute('Select * from students where user_id in (select user_id from registers where course_id = (%s))', course_id)
+    students = []
+    for result in cursor:
+      students.append(result)
+    cursor.close()
+    #print(professors)
 
-  cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
-  lectures = []
-  for result in cursor:
-    lectures.append(result)
-  cursor.close()
-  #print(lectures)
+    cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
+    lectures = []
+    for result in cursor:
+      lectures.append(result)
+    cursor.close()
+    #print(lectures)
 
-  cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
-  reviews = []
-  for result in cursor:
-    reviews.append(result)
-  cursor.close()
-  #print(reviews)
+    cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
+    reviews = []
+    for result in cursor:
+      reviews.append(result)
+    cursor.close()
+    #print(reviews)
 
-  context = dict(course_details = course_details, students = students, lectures = lectures, reviews = reviews)
-  return render_template("professor_course.html", **context)
+    context = dict(course_details = course_details, students = students, lectures = lectures, reviews = reviews)
+    return render_template("professor_course.html", **context)
+  else:
+    return redirect('/')
 
 
 @app.route('/add_lecture', methods=["POST"])
@@ -451,80 +489,92 @@ def delete_lecture():
 
 @app.route('/professors')
 def professors():
-  prof_id = request.args.get('prof_id')
-  print(prof_id)
-  
-  cursor = g.conn.execute('Select * from professors where user_id = (%s)', prof_id)
-  prof_details = cursor.fetchone()
-  print(prof_details)
+  if session:
+    if session['usertype'] == 'professor':
+      prof_id = request.args.get('prof_id')
+      print(prof_id)
+      
+      cursor = g.conn.execute('Select * from professors where user_id = (%s)', prof_id)
+      prof_details = cursor.fetchone()
+      print(prof_details)
 
-  cursor = g.conn.execute('Select * from belongs_to b, organisation o where b.user_id = (%s) and b.org_id = o.org_id', prof_id)
-  org_details = cursor.fetchone()
-  print(org_details)
+      cursor = g.conn.execute('Select * from belongs_to b, organisation o where b.user_id = (%s) and b.org_id = o.org_id', prof_id)
+      org_details = cursor.fetchone()
+      print(org_details)
 
-  cursor = g.conn.execute('Select * from courses where course_id in (select course_id from teaches where user_id = (%s)) order by course_rating desc limit 10', prof_id)
-  courses = []
-  for result in cursor:
-    courses.append(result)
-  cursor.close()
-  print(courses)
+      cursor = g.conn.execute('Select * from courses where course_id in (select course_id from teaches where user_id = (%s)) order by course_rating desc limit 10', prof_id)
+      courses = []
+      for result in cursor:
+        courses.append(result)
+      cursor.close()
+      print(courses)
 
-  cursor = g.conn.execute('Select * from gets g, review r where g.user_id = (%s) and r.review_id=g.review_id and r.review_type=g.review_type order by r.date_of_review desc', prof_id)
-  reviews = []
-  for result in cursor:
-    reviews.append(result)
-  cursor.close()
-  print(reviews)
+      cursor = g.conn.execute('Select * from gets g, review r where g.user_id = (%s) and r.review_id=g.review_id and r.review_type=g.review_type order by r.date_of_review desc', prof_id)
+      reviews = []
+      for result in cursor:
+        reviews.append(result)
+      cursor.close()
+      print(reviews)
 
-  context = dict(prof_details = prof_details, org_details = org_details, courses = courses, reviews = reviews)
-  return render_template("professor.html", **context)
+      context = dict(prof_details = prof_details, org_details = org_details, courses = courses, reviews = reviews)
+      return render_template("professor.html", **context)
+    else:
+      return redirect('/')
+  else:
+    return redirect('/')
 
 
 @app.route('/courses')
 def courses():
-  course_id = request.args.get('course_id')
-  #print(course_id)
-  
-  cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
-  course_details = cursor.fetchone()
-  #print(course_details)
+  if session:
+    if session['usertype'] == 'student':
+      course_id = request.args.get('course_id')
+      #print(course_id)
+      
+      cursor = g.conn.execute('Select * from courses where course_id = (%s)', course_id)
+      course_details = cursor.fetchone()
+      #print(course_details)
 
-  cursor = g.conn.execute('Select * from professors where user_id in (select user_id from teaches where course_id = (%s))', course_id)
-  professors = []
-  for result in cursor:
-    professors.append(result)
-  cursor.close()
-  #print(professors)
+      cursor = g.conn.execute('Select * from professors where user_id in (select user_id from teaches where course_id = (%s))', course_id)
+      professors = []
+      for result in cursor:
+        professors.append(result)
+      cursor.close()
+      #print(professors)
 
-  cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
-  lectures = []
-  for result in cursor:
-    lectures.append(result)
-  cursor.close()
-  #print(lectures)
+      cursor = g.conn.execute('Select * from lectures_contains where course_id = (%s)', course_id)
+      lectures = []
+      for result in cursor:
+        lectures.append(result)
+      cursor.close()
+      #print(lectures)
 
-  cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
-  reviews = []
-  for result in cursor:
-    reviews.append(result)
-  cursor.close()
-  #print(reviews)
+      cursor = g.conn.execute('Select * from has h, review r where h.course_id = (%s) and r.review_id=h.review_id and r.review_type=h.review_type order by date_of_review desc', course_id)
+      reviews = []
+      for result in cursor:
+        reviews.append(result)
+      cursor.close()
+      #print(reviews)
 
-  user_name = session['username']
-  cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
-  userid = cursor.fetchone()['user_id']
-  print(userid)
+      user_name = session['username']
+      cursor = g.conn.execute('Select user_id from students where username = (%s)', user_name)
+      userid = cursor.fetchone()['user_id']
+      print(userid)
 
-  cursor = g.conn.execute('Select * from registers where user_id = (%s) and course_id = (%s)', userid, course_id)
-  registered_course = cursor.fetchone()
-  if registered_course:
-    status = registered_course['status']
+      cursor = g.conn.execute('Select * from registers where user_id = (%s) and course_id = (%s)', userid, course_id)
+      registered_course = cursor.fetchone()
+      if registered_course:
+        status = registered_course['status']
+      else:
+        status = "None"
+      print(status)
+
+      context = dict(course_details = course_details, professors = professors, lectures = lectures, reviews = reviews, status = status)
+      return render_template("course.html", **context)
+    else:
+      return redirect('professor_home')
   else:
-    status = "None"
-  print(status)
-
-  context = dict(course_details = course_details, professors = professors, lectures = lectures, reviews = reviews, status = status)
-  return render_template("course.html", **context)
+    return redirect('/')
 
 
 @app.route('/add_review', methods=["POST"])
@@ -608,22 +658,27 @@ def add_wishlist():
 def registered_courses():
   # context = dict(username = session['username'])
   if request.method == 'GET':
-    username = session['username']
-    print(username)
-    cursor = g.conn.execute('SELECT user_id FROM Students WHERE username = %s', (username, ))
-    account_userid = cursor.fetchone()
-    cursor.close()
-    print(account_userid[0])
+    if session:
+      if session['usertype'] == 'student':
+        username = session['username']
+        print(username)
+        cursor = g.conn.execute('SELECT user_id FROM Students WHERE username = %s', (username, ))
+        account_userid = cursor.fetchone()
+        cursor.close()
+        print(account_userid[0])
 
-    cursor = g.conn.execute('SELECT r.course_id as id, c.course_name as name, r.status as status, r.reg_date as reg_date FROM Registers r, Courses c WHERE user_id = (%s) and r.course_id = c.course_id', (account_userid[0], ))
-    reg_courses = []
-    for result in cursor:
-      reg_courses.append(result)
-    cursor.close()
-    print(reg_courses)
-    context = dict(courses = reg_courses)
-    return render_template("registered_courses.html", **context)
-
+        cursor = g.conn.execute('SELECT r.course_id as id, c.course_name as name, r.status as status, r.reg_date as reg_date FROM Registers r, Courses c WHERE user_id = (%s) and r.course_id = c.course_id', (account_userid[0], ))
+        reg_courses = []
+        for result in cursor:
+          reg_courses.append(result)
+        cursor.close()
+        print(reg_courses)
+        context = dict(courses = reg_courses)
+        return render_template("registered_courses.html", **context)
+      else:
+        return redirect('professor_home')
+    else:
+      return redirect('/')
 
 
 if __name__ == "__main__":
