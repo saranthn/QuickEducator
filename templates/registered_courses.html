@@ -80,12 +80,14 @@
         <tr>
           <th>Course ID</th>
           <th>Course Name</th>
+          <th>Registration Date</th>
           <th>Status</th>
         </tr>
         {% for n in courses %}
           <tr>
             <td>{{n['id']}}</td>
             <td><a href="{{url_for('courses', course_id=n['id'])}}">{{n['name']}}</a></td>
+            <td>{{n['reg_date']}}</td>
             <td>{{n['status']}}</td>
           </tr>
         {% endfor %}

@@ -615,7 +615,7 @@ def registered_courses():
     cursor.close()
     print(account_userid[0])
 
-    cursor = g.conn.execute('SELECT r.course_id as id, c.course_name as name, r.status as status FROM Registers r, Courses c WHERE user_id = (%s) and r.course_id = c.course_id', (account_userid[0], ))
+    cursor = g.conn.execute('SELECT r.course_id as id, c.course_name as name, r.status as status, r.reg_date as reg_date FROM Registers r, Courses c WHERE user_id = (%s) and r.course_id = c.course_id', (account_userid[0], ))
     reg_courses = []
     for result in cursor:
       reg_courses.append(result)
