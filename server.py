@@ -213,12 +213,14 @@ def signUp():
     account_email = cursor.fetchone()
     cursor.close()
     if account_email or account_username:
-      msg = 'Account already exists !'
+      msg = 'Account email or username exists!'
       print(msg)
+      flash(msg)
+      return render_template("signup_page.html")
     else:
       g.conn.execute("INSERT INTO Students(username, first_name, last_name, gender, email, contact_no, DOB, university, degree, course, country, password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (username,firstname,lastname,gender,email,phoneNo,dob,university, degree, course, country, password))
       print(msg)
-    return redirect("signIn")
+      return redirect("signIn")
   else:
     if session:
       if session['usertype'] == 'student':
@@ -282,12 +284,14 @@ def professor_signUp():
     account_email = cursor.fetchone()
     cursor.close()
     if account_email or account_username:
-      msg = 'Account already exists !'
+      msg = 'Account email or username exists!'
       print(msg)
+      flash(msg)
+      return render_template("professor_signup.html")
     else:
       g.conn.execute("INSERT INTO Professors(username, first_name, last_name, gender, email, contact_no, DOB, years_of_experience, qualification, research_area, password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (username, firstname, lastname, gender, email, phoneNo, dob, yoe, qualification, research, password))
       print(msg)
-    return redirect("professor_signIn")
+      return redirect("professor_signIn")
   else:
     if session:
       if session['usertype'] == 'student':

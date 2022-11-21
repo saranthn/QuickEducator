@@ -37,6 +37,11 @@
 					<center><span class="login">If Student <a href="{{ url_for('signUp') }}">Register here</a></span></center>
 				</form>
 			</div>
+			{% for message in get_flashed_messages() %}
+	      <center>
+	      <div class="alert-error">Error: {{ message }}</div>
+	      </center>
+	    {% endfor %}
 	</div>
 </body>
 </html>
