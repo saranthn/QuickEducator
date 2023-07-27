@@ -41,7 +41,7 @@ This is a Massive Open Online Courses(MOOC) platform for students, offering acce
 
 ## ER Diagram
 
-![Architecture](./ER%20Diagram%20final.pdf)
+![Architecture](./ER%20Diagram%20final.jpg)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
